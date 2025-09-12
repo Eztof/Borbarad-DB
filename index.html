@@ -7,127 +7,583 @@
   <!-- Supabase JS v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root { --bg:#0b1020; --panel:#121833; --ink:#e8ecff; --muted:#aab3d4; --accent:#8fb3ff; --ok:#2ecc71; --warn:#ffb347; --err:#ff6b6b; }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#0b1020,#0b1020 50%,#0b152a);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
-    header{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #1e274a;background:#0b1226;position:sticky;top:0;z-index:5}
-    header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
-    .container{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 53px)}
-    aside{border-right:1px solid #1e274a;background:#0c1430;padding:12px;overflow:auto}
-    main{padding:16px;overflow:auto}
-    .card{background:var(--panel);border:1px solid #1f2a52;border-radius:14px;padding:12px}
-    .stack{display:flex;flex-direction:column;gap:8px}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    select, input[type="text"], input[type="number"], input[type="date"], textarea{
-      width:100%;background:#0d1534;color:var(--ink);border:1px solid #26305c;border-radius:10px;padding:8px 10px;outline:none
+    :root {
+      /* Modernere Farbpalette */
+      --bg-dark: #0f172a; /* Sehr dunkelblau */
+      --bg-panel: #1e293b; /* Panel-Hintergrund */
+      --bg-card: #334155; /* Karten-Hintergrund */
+      --bg-input: #475569; /* Input-Hintergrund */
+      --text-primary: #f1f5f9; /* Haupttext */
+      --text-secondary: #cbd5e1; /* Sekundärtext */
+      --accent-primary: #60a5fa; /* Primärer Akzent (Blau) */
+      --accent-secondary: #818cf8; /* Sekundärer Akzent (Violett) */
+      --success: #34d399; /* Erfolg (Grün) */
+      --warning: #fbbf24; /* Warnung (Gelb) */
+      --error: #f87171; /* Fehler (Rot) */
+      --border: #4b5563; /* Rahmenfarbe */
+      --shadow: rgba(0, 0, 0, 0.5); /* Schatten */
+
+      /* Abgerundete Ecken */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
     }
-    textarea{min-height:70px}
-    label{font-size:12px;color:var(--muted)}
-    .btn{background:#1a2551;border:1px solid #2a3a78;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
-    .btn:hover{filter:brightness(1.08)}
-    .btn.primary{background:linear-gradient(180deg,#2a5fff,#5f89ff);border-color:#5f89ff;color:#07122a}
-    .btn.warn{background:#3a2a10;border-color:#6a4b12;color:#ffd7a3}
-    .btn.ghost{background:transparent;border-color:#31406e}
-    .pill{display:inline-flex;align-items:center;gap:6px;background:#101b3f;border:1px solid #27356a;border-radius:999px;padding:6px 10px}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    th,td{border-bottom:1px solid #223066;padding:8px;vertical-align:top}
-    th{position:sticky;top:0;background:#0e1635;z-index:1;text-align:left}
-    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .muted{color:var(--muted)}
-    .error{color:var(--err)}
-    .success{color:var(--ok)}
-    .grid{display:grid;gap:10px}
-    .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .help{font-size:12px;color:#b4c0ee}
-    kbd{background:#0a1436;border:1px solid #2a3a78;padding:1px 6px;border-radius:6px;font-size:12px}
-    .small{font-size:12px}
-    .badge{display:inline-block;background:#132052;border:1px solid #2a3a78;border-radius:8px;padding:2px 6px;font-size:11px;color:#c8d6ff}
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 24px;
+      background: linear-gradient(90deg, var(--bg-panel), #2d3748);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header .status-pill {
+      background-color: var(--bg-card);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+    }
+
+    header .status-pill .status-value {
+      color: var(--accent-primary);
+      font-weight: 500;
+    }
+
+    /* Hauptcontainer */
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    aside {
+      width: 300px;
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #5a677d;
+    }
+
+    .btn-danger {
+      background-color: var(--error);
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background-color: #ef4444;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      font-size: 1.1rem;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .help-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    kbd {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge-fk {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .badge-enum {
+      background-color: #7c3aed;
+      color: white;
+    }
+
+    .badge-readonly {
+      background-color: #6b7280;
+      color: white;
+    }
+
+    .quick-access-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .quick-access-grid .btn {
+      font-size: 0.85rem;
+      padding: 8px 12px;
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toolbar > * {
+      flex-shrink: 0;
+    }
+
+    .search-container {
+      flex: 1;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .search-container input {
+      padding-left: 36px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .table-info {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: #2d3748;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    tr:hover {
+      background-color: #4a5568;
+    }
+
+    .action-cell {
+      display: flex;
+      gap: 8px;
+    }
+
+    .form-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .form-header h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-mode {
+      font-size: 0.9rem;
+      color: var(--accent-primary);
+      background-color: rgba(96, 165, 250, 0.1);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-field-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .op-status {
+      flex: 1;
+      font-size: 0.9rem;
+      min-width: 200px;
+    }
+
+    .op-status .success {
+      color: var(--success);
+    }
+
+    .op-status .error {
+      color: var(--error);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 900px) {
+      .main-container {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .cols-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 12px 16px;
+        gap: 10px;
+      }
+
+      header h1 {
+        font-size: 1.2rem;
+      }
+
+      .status-pill {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+      }
+
+      main {
+        padding: 16px;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-container {
+        max-width: 100%;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cols-2 {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
 <header>
-  <h1>🧙‍♂️ Borbarad-DB Data Filler – DSA 4.1 Sonderfertigkeiten</h1>
-  <span class="pill">Status: <span id="status" class="muted">Verbinde…</span></span>
-  <span class="pill">Projekt: <span class="muted">Supabase</span></span>
+  <h1>🧙‍♂️ Borbarad-DB Data Filler</h1>
+  <div class="status-pill">Status: <span id="status" class="status-value">Verbinde…</span></div>
+  <div class="status-pill">Projekt: <span class="status-value">Supabase</span></div>
 </header>
 
-<div class="container">
-  <aside class="stack">
-    <div class="card stack">
+<div class="main-container">
+  <aside>
+    <div class="card">
+      <h3>🔗 Verbindung</h3>
       <div class="stack">
-        <label>Supabase URL</label>
-        <input id="sb-url" type="text" value="https://uzgizoikrricctzznlzr.supabase.co" />
-        <label>Anon/Public API Key</label>
-        <input id="sb-key" type="text" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6Z2l6b2lrcnJpY2N0enpubHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDc1MTksImV4cCI6MjA3MjQ4MzUxOX0.MJFMo6PrBXq_3xQGqYeyMKZx0JTqouFBW3eqteXgsm8" />
-        <button id="btn-connect" class="btn">Neu verbinden</button>
-        <div class="help">⚠️ Nutze hier nur <b>Public/Anon</b>-Keys. Für Admin-Aufgaben <i>nicht</i> geeignet.</div>
+        <div class="form-field">
+          <label for="sb-url">Supabase URL</label>
+          <input id="sb-url" type="text" value="https://uzgizoikrricctzznlzr.supabase.co" />
+        </div>
+        <div class="form-field">
+          <label for="sb-key">Anon/Public API Key</label>
+          <input id="sb-key" type="text" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6Z2l6b2lrcnJpY2N0enpubHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDc1MTksImV4cCI6MjA3MjQ4MzUxOX0.MJFMo6PrBXq_3xQGqYeyMKZx0JTqouFBW3eqteXgsm8" />
+        </div>
+        <button id="btn-connect" class="btn btn-primary">Neu verbinden</button>
+        <div class="help-text">⚠️ Nutze hier nur <b>Public/Anon</b>-Keys. Für Admin-Aufgaben <i>nicht</i> geeignet.</div>
       </div>
     </div>
 
-    <div class="card stack">
-      <label>Tabelle</label>
-      <select id="table-select"></select>
-      <div class="row">
-        <button id="btn-load" class="btn">Laden</button>
-        <button id="btn-new" class="btn ghost">Neu anlegen</button>
-      </div>
-      <div class="small muted">Tipp: <kbd>Strg</kbd>+<kbd>K</kbd> für Suche in Datensätzen.</div>
-    </div>
-
-    <div class="card stack">
-      <div class="small help">Schnellzugriff</div>
-      <div class="grid cols-2">
-        <button class="btn small" data-jump="sonderfertigkeit">Sonderfertigkeit</button>
-        <button class="btn small" data-jump="sf_stufe">Stufe</button>
-        <button class="btn small" data-jump="sf_kosten">AP-Kosten</button>
-        <button class="btn small" data-jump="sf_quelle">Quelle</button>
-        <button class="btn small" data-jump="sf_modifikator">Modifikator</button>
-        <button class="btn small" data-jump="sf_nutzung">Nutzung</button>
-        <button class="btn small" data-jump="sf_pre_sf">Voraus. SF</button>
-        <button class="btn small" data-jump="sf__talent">↔ SF↔Talent</button>
+    <div class="card">
+      <h3>📂 Daten</h3>
+      <div class="stack">
+        <div class="form-field">
+          <label for="table-select">Tabelle</label>
+          <select id="table-select"></select>
+        </div>
+        <div class="btn-group">
+          <button id="btn-load" class="btn btn-secondary">Laden</button>
+          <button id="btn-new" class="btn btn-secondary">Neu anlegen</button>
+        </div>
+        <div class="help-text">Tipp: <kbd>Strg</kbd>+<kbd>K</kbd> für Suche in Datensätzen.</div>
       </div>
     </div>
 
-    <div class="card stack">
-      <div class="small help">Legende</div>
-      <span class="badge">FK</span> Fremdschlüssel-Dropdown<br/>
-      <span class="badge">ENUM</span> feste Auswahl<br/>
-      <span class="badge">NULL</span> leer lassen
+    <div class="card">
+      <h3>⚡ Schnellzugriff</h3>
+      <div class="quick-access-grid">
+        <button class="btn btn-secondary" data-jump="sonderfertigkeit">Sonderfertigkeit</button>
+        <button class="btn btn-secondary" data-jump="sf_stufe">Stufe</button>
+        <button class="btn btn-secondary" data-jump="sf_kosten">AP-Kosten</button>
+        <button class="btn btn-secondary" data-jump="sf_quelle">Quelle</button>
+        <button class="btn btn-secondary" data-jump="sf_modifikator">Modifikator</button>
+        <button class="btn btn-secondary" data-jump="sf_nutzung">Nutzung</button>
+        <button class="btn btn-secondary" data-jump="sf_pre_sf">Voraus. SF</button>
+        <button class="btn btn-secondary" data-jump="sf__talent">↔ SF↔Talent</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>ℹ️ Legende</h3>
+      <div class="stack">
+        <div><span class="badge badge-fk">FK</span> Fremdschlüssel-Dropdown</div>
+        <div><span class="badge badge-enum">ENUM</span> feste Auswahl</div>
+        <div><span class="badge badge-readonly">RO</span> Nur lesbar</div>
+      </div>
     </div>
   </aside>
 
-  <main class="stack">
-    <div class="card stack">
+  <main>
+    <div class="card">
       <div class="toolbar">
-        <input id="search-input" type="text" placeholder="Suche (z. B. name: Finte)" />
-        <button id="btn-search" class="btn">Suchen</button>
-        <span class="muted small" id="rows-count"></span>
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input id="search-input" type="text" placeholder="Suche (z. B. name: Finte)" />
+        </div>
+        <button id="btn-search" class="btn btn-primary">Suchen</button>
+        <span class="table-info" id="rows-count"></span>
         <span style="flex:1"></span>
-        <button id="btn-refresh" class="btn ghost">🔄 Aktualisieren</button>
+        <button id="btn-refresh" class="btn btn-secondary btn-icon">🔄</button>
       </div>
-      <div id="rows-wrap" style="overflow:auto;max-height:40vh;margin-top:8px">
+      <div class="table-container">
         <table id="rows-table"></table>
       </div>
-      <div class="row">
-        <button id="prev-page" class="btn ghost">◀ Zurück</button>
-        <button id="next-page" class="btn ghost">Weiter ▶</button>
-        <span class="muted small" id="page-info"></span>
+      <div class="pagination">
+        <button id="prev-page" class="btn btn-secondary">◀ Zurück</button>
+        <span class="table-info" id="page-info"></span>
+        <button id="next-page" class="btn btn-secondary">Weiter ▶</button>
       </div>
     </div>
 
-    <div class="card stack">
-      <div class="toolbar">
-        <h3 style="margin:0;font-size:16px">Formular</h3>
-        <span id="form-mode" class="muted small">Neu</span>
-        <span style="flex:1"></span>
-        <button id="btn-clear" class="btn ghost">Felder leeren</button>
+    <div class="form-card">
+      <div class="form-header">
+        <h2>📝 Formular</h2>
+        <span id="form-mode" class="form-mode">Neu</span>
       </div>
-      <form id="editor" class="grid cols-3"></form>
-      <div class="row">
-        <button id="btn-save" class="btn primary">💾 Speichern</button>
-        <button id="btn-delete" class="btn warn">🗑 Löschen</button>
-        <span id="op-status" class="muted small"></span>
+      <form id="editor" class="form-grid"></form>
+      <div class="form-actions">
+        <button id="btn-save" class="btn btn-primary">💾 Speichern</button>
+        <button id="btn-delete" class="btn btn-danger">🗑 Löschen</button>
+        <button id="btn-clear" class="btn btn-secondary">Felder leeren</button>
+        <span id="op-status" class="op-status"></span>
       </div>
     </div>
   </main>
@@ -144,7 +600,6 @@ const ENUMS = {
   wirk_operator: ['add','mult','ersetze'],
   vergleich_op: ['>=','>','=','<=','<','!=']
 };
-
 // Schema-Definition: Tabellen + Spalten (Typen + optionale FK)
 const SCHEMA = {
   // === Stammdaten ===
@@ -183,7 +638,6 @@ const SCHEMA = {
     }
   },
   tag: { label:'Tags', pk:'id', columns:{ id:{type:'integer',readonly:true}, name:{type:'text',required:true} } },
-
   // === Kern: Sonderfertigkeit ===
   sonderfertigkeit: {
     label:'Sonderfertigkeiten',
@@ -201,7 +655,6 @@ const SCHEMA = {
       bemerkung:{type:'textarea'}
     }
   },
-
   // Verknüpfungen
   sf__tag: {
     label:'SF ↔ Tag',
@@ -235,7 +688,6 @@ const SCHEMA = {
       tradition_id:{type:'fk', ref:{table:'tradition', value:'id', label:'name'}, required:true}
     }
   },
-
   // Stufen/Varianten + Kosten + Quelle
   sf_stufe: {
     label:'Stufen/Varianten',
@@ -272,7 +724,6 @@ const SCHEMA = {
       errata_hint:{type:'textarea'}
     }
   },
-
   // Voraussetzungen
   sf_voraussetzung_text:{
     label:'Voraussetzung (Text)',
@@ -389,7 +840,6 @@ const SCHEMA = {
       text:{type:'text'}
     }
   },
-
   // Nutzung / Ressourcen
   sf_nutzung:{
     label:'Nutzung',
@@ -417,7 +867,6 @@ const SCHEMA = {
       bemerkung:{type:'text'}
     }
   },
-
   // Wirkung / Modifikatoren / Konflikte / Versionen
   sf_wirkung_text:{
     label:'Wirkung (Text)',
@@ -466,32 +915,28 @@ const SCHEMA = {
     }
   }
 };
-
 // ======= Laufzeit =======
 let client = null;
 let currentTable = 'sonderfertigkeit';
 let editingRow = null;
 let page = 0, pageSize = 25;
-
 const $ = (sel) => document.querySelector(sel);
 const $rowsTable = $('#rows-table');
 const $rowsCount = $('#rows-count');
 const $pageInfo = $('#page-info');
 const $status = $('#status');
-
 function initSupabase(){
   const url = $('#sb-url').value.trim();
   const key = $('#sb-key').value.trim();
   client = supabase.createClient(url, key, { auth: { persistSession: false } });
   $status.textContent = 'Verbunden';
+  $status.className = 'status-value'; // Reset class
 }
-
 function fmt(v){
   if (v === null || v === undefined) return '—';
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   return String(v);
 }
-
 function buildTableSelect(){
   const sel = $('#table-select');
   sel.innerHTML = '';
@@ -502,77 +947,115 @@ function buildTableSelect(){
   });
   sel.value = currentTable;
 }
-
 function buildForm(table, row=null){
   const def = SCHEMA[table];
   const form = $('#editor');
   form.innerHTML = '';
   $('#form-mode').textContent = row ? `Bearbeiten (#${row[def.pk] ?? '–'})` : 'Neu';
   editingRow = row;
-
   for (const [col, meta] of Object.entries(def.columns)){
-    const wrap = document.createElement('div'); wrap.className = 'stack';
+    const wrap = document.createElement('div'); wrap.className = 'form-field';
+    
+    const labelWrap = document.createElement('div'); labelWrap.className = 'form-field-header';
     const label = document.createElement('label');
+    label.textContent = col;
+    labelWrap.appendChild(label);
+    
     let badges = [];
-    if (meta.type === 'fk') badges.push('FK');
-    if (meta.type === 'enum') badges.push('ENUM');
-    if (meta.readonly) badges.push('readonly');
-    label.innerHTML = `${col}${badges.length? ' <span class="badge">'+badges.join('</span> <span class="badge">')+'</span>':''}`;
+    if (meta.type === 'fk') badges.push('<span class="badge badge-fk">FK</span>');
+    if (meta.type === 'enum') badges.push('<span class="badge badge-enum">ENUM</span>');
+    if (meta.readonly) badges.push('<span class="badge badge-readonly">RO</span>');
+    if (badges.length > 0) {
+        labelWrap.innerHTML += badges.join(' ');
+    }
+    
     let input;
-
     const value = row ? row[col] : (meta.default ?? null);
-
-    if (meta.type === 'textarea'){ input = document.createElement('textarea'); input.value = value ?? ''; }
-    else if (meta.type === 'boolean'){ input = document.createElement('select');
-      ['','true','false'].forEach(v=>{
-        const o=document.createElement('option'); o.value=v; o.textContent=v===''?'(NULL)':v; input.appendChild(o);
-      });
-      input.value = value === null || value === undefined ? '' : (value ? 'true' : 'false');
+    if (meta.type === 'textarea'){ 
+        input = document.createElement('textarea'); 
+        input.rows = 4;
+        input.value = value ?? ''; 
+    }
+    else if (meta.type === 'boolean'){ 
+        input = document.createElement('select');
+        ['', 'true', 'false'].forEach(v=>{
+            const o=document.createElement('option'); 
+            o.value=v; 
+            o.textContent=v===''?'(NULL)':(v==='true'?'Ja':'Nein'); 
+            input.appendChild(o);
+        });
+        input.value = value === null || value === undefined ? '' : (value ? 'true' : 'false');
     }
     else if (meta.type === 'enum'){
-      input = document.createElement('select');
-      const opts = ENUMS[meta.enum] || [];
-      const nullOpt = document.createElement('option'); nullOpt.value=''; nullOpt.textContent='(NULL)';
-      input.appendChild(nullOpt);
-      opts.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;input.appendChild(o);});
-      input.value = value ?? (meta.default ?? '');
+        input = document.createElement('select');
+        const opts = ENUMS[meta.enum] || [];
+        const nullOpt = document.createElement('option'); nullOpt.value=''; nullOpt.textContent='(NULL)';
+        input.appendChild(nullOpt);
+        opts.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;input.appendChild(o);});
+        input.value = value ?? (meta.default ?? '');
     }
     else if (meta.type === 'fk'){
-      input = document.createElement('select');
-      input.dataset.fk = JSON.stringify(meta.ref);
-      const nullOpt = document.createElement('option'); nullOpt.value=''; nullOpt.textContent='(NULL)';
-      input.appendChild(nullOpt);
-      // später befüllen:
-      populateFkOptions(input, value);
-      // Suche-Button
-      const btn = document.createElement('button'); btn.type='button'; btn.className='btn small ghost'; btn.textContent='🔎 Laden';
-      btn.onclick = ()=> populateFkOptions(input, input.value || null, true);
-      wrap.appendChild(btn);
+        input = document.createElement('select');
+        input.dataset.fk = JSON.stringify(meta.ref);
+        const nullOpt = document.createElement('option'); nullOpt.value=''; nullOpt.textContent='(NULL)';
+        input.appendChild(nullOpt);
+        // später befüllen:
+        populateFkOptions(input, value);
+        // Suche-Button
+        const btnWrap = document.createElement('div');
+        btnWrap.className = 'stack';
+        const btn = document.createElement('button'); 
+        btn.type='button'; 
+        btn.className='btn btn-secondary btn-icon'; 
+        btn.textContent='🔎';
+        btn.title = 'FK-Optionen neu laden';
+        btn.onclick = ()=> populateFkOptions(input, input.value || null, true);
+        btnWrap.appendChild(input);
+        btnWrap.appendChild(btn);
+        wrap.appendChild(labelWrap);
+        wrap.appendChild(btnWrap);
+        form.appendChild(wrap);
+        continue; // Skip the rest of the loop for this field
     }
-    else if (meta.type === 'integer'){ input = document.createElement('input'); input.type='number'; input.step='1'; input.value = value ?? ''; }
-    else if (meta.type === 'numeric'){ input = document.createElement('input'); input.type='number'; input.step='any'; input.value = value ?? ''; }
-    else if (meta.type === 'date'){ input = document.createElement('input'); input.type='date'; input.value = value ?? ''; }
-    else { input = document.createElement('input'); input.type='text'; input.value = value ?? ''; }
-
+    else if (meta.type === 'integer'){ 
+        input = document.createElement('input'); 
+        input.type='number'; 
+        input.step='1'; 
+        input.value = value ?? ''; 
+    }
+    else if (meta.type === 'numeric'){ 
+        input = document.createElement('input'); 
+        input.type='number'; 
+        input.step='any'; 
+        input.value = value ?? ''; 
+    }
+    else if (meta.type === 'date'){ 
+        input = document.createElement('input'); 
+        input.type='date'; 
+        input.value = value ?? ''; 
+    }
+    else { 
+        input = document.createElement('input'); 
+        input.type='text'; 
+        input.value = value ?? ''; 
+    }
     input.id = `f_${col}`;
     if (meta.readonly) input.disabled = true;
-    wrap.appendChild(label); wrap.appendChild(input);
+    wrap.appendChild(labelWrap);
+    wrap.appendChild(input);
     form.appendChild(wrap);
   }
 }
-
 async function populateFkOptions(selectEl, currentValue=null, forceReload=false){
   try{
     const ref = JSON.parse(selectEl.dataset.fk);
     if (!ref || !ref.table) return;
     // Wenn schon Optionen da sind und kein Reload gefordert ist, nicht doppelt laden
     if (selectEl.options.length>1 && !forceReload) { selectEl.value = currentValue ?? ''; return; }
-
     selectEl.disabled = true;
     const { data, error } = await client.from(ref.table)
       .select(`${ref.value}, ${ref.label}`).order(ref.label, { ascending: true }).limit(500);
     if (error) throw error;
-
     // Reset außer (NULL)
     [...selectEl.options].slice(1).forEach(o=>o.remove());
     data.forEach(row=>{
@@ -589,7 +1072,6 @@ async function populateFkOptions(selectEl, currentValue=null, forceReload=false)
     selectEl.disabled = false;
   }
 }
-
 function parseSearch(q){
   // einfache Syntax: "name: Finte" oder "id=12"
   const parts = q.split(/\s+/).filter(Boolean);
@@ -600,19 +1082,15 @@ function parseSearch(q){
   }
   return filters;
 }
-
 async function loadRows(resetPage=false){
   if (resetPage) page = 0;
   const table = currentTable;
   const def = SCHEMA[table];
   const from = page*pageSize;
   const to = from + pageSize - 1;
-
   let query = client.from(table).select('*', { count: 'exact' }).range(from, to);
-
   // einfache Default-Sortierung
   if (def.pk && typeof def.pk === 'string') query = query.order(def.pk, { ascending:false });
-
   // Suche
   const q = $('#search-input').value.trim();
   if (q){
@@ -625,23 +1103,20 @@ async function loadRows(resetPage=false){
       query = query.filter(f.col, sop, val);
     });
   }
-
   const { data, error, count } = await query;
   if (error){ showError(error); return; }
   renderRowsTable(data, def);
-  $rowsCount.textContent = `${count ?? data.length} Datensätze`;
+  $rowsCount.textContent = `${count ?? '?'} Datensätze`;
   $pageInfo.textContent = `Seite ${page+1}`;
 }
-
 function renderRowsTable(rows, def){
   const cols = Object.keys(def.columns);
   $rowsTable.innerHTML = '';
   const thead = document.createElement('thead');
   const trh = document.createElement('tr');
   cols.forEach(c=>{ const th=document.createElement('th'); th.textContent=c; trh.appendChild(th); });
-  const acth = document.createElement('th'); acth.textContent='Aktion'; trh.appendChild(acth);
+  const acth = document.createElement('th'); acth.textContent='Aktionen'; trh.appendChild(acth);
   thead.appendChild(trh); $rowsTable.appendChild(thead);
-
   const tbody = document.createElement('tbody');
   rows.forEach((row)=>{
     const tr = document.createElement('tr');
@@ -651,17 +1126,29 @@ function renderRowsTable(rows, def){
       tr.appendChild(td);
     });
     const act = document.createElement('td');
-    const b1 = document.createElement('button'); b1.className='btn small'; b1.textContent='Bearbeiten';
+    act.className = 'action-cell';
+    const b1 = document.createElement('button'); 
+    b1.className='btn btn-secondary btn-icon'; 
+    b1.textContent='✏️';
+    b1.title = 'Bearbeiten';
     b1.onclick = ()=> buildForm(currentTable, row);
-    const b2 = document.createElement('button'); b2.className='btn small warn'; b2.textContent='Löschen';
-    b2.onclick = ()=> { buildForm(currentTable, row); doDelete(); };
-    act.appendChild(b1); act.appendChild(b2);
+    const b2 = document.createElement('button'); 
+    b2.className='btn btn-danger btn-icon'; 
+    b2.textContent='🗑';
+    b2.title = 'Löschen';
+    b2.onclick = ()=> { 
+        if (confirm('Wirklich löschen?')) {
+            buildForm(currentTable, row); 
+            doDelete(); 
+        }
+    };
+    act.appendChild(b1); 
+    act.appendChild(b2);
     tr.appendChild(act);
     tbody.appendChild(tr);
   });
   $rowsTable.appendChild(tbody);
 }
-
 function readFormValues(table){
   const def = SCHEMA[table];
   const payload = {};
@@ -677,17 +1164,14 @@ function readFormValues(table){
   }
   return payload;
 }
-
 async function doSave(){
   const table = currentTable;
   const def = SCHEMA[table];
   const raw = readFormValues(table);
-
   try{
     $('#btn-save').disabled = true;
     $('#op-status').textContent = 'Speichere…';
     let res, error;
-
     if (Array.isArray(def.pk)){
       // Composite PK: Upsert mit allen PK-Feldern (hier keine Auto-ID)
       ({ data: res, error } = await client.from(table).upsert(raw).select());
@@ -708,7 +1192,6 @@ async function doSave(){
       }
       ({ data: res, error } = await client.from(table).insert(insertPayload).select());
     }
-
     if (error) throw error;
     $('#op-status').innerHTML = `<span class="success">✅ Gespeichert</span>`;
     await loadRows(true);
@@ -719,13 +1202,11 @@ async function doSave(){
     $('#btn-save').disabled = false;
   }
 }
-
 async function doDelete(){
   const table = currentTable;
   const def = SCHEMA[table];
   if (!editingRow){ toast('Keine Zeile ausgewählt', true); return; }
-  if (!confirm('Wirklich löschen?')) return;
-
+  // Confirm is now handled in the button click handler
   try{
     $('#btn-delete').disabled = true;
     $('#op-status').textContent = 'Lösche…';
@@ -747,33 +1228,68 @@ async function doDelete(){
     $('#btn-delete').disabled = false;
   }
 }
-
 function toast(msg, isErr=false){
   $status.textContent = msg;
-  $status.className = isErr ? 'error' : 'success';
-  setTimeout(()=>{ $status.textContent='Bereit'; $status.className='muted'; }, 3000);
+  $status.className = isErr ? 'status-value error' : 'status-value success';
+  setTimeout(()=>{ 
+      $status.textContent='Bereit'; 
+      $status.className='status-value'; 
+  }, 3000);
 }
-function showError(err){ console.error(err); toast(err.message || String(err), true); }
-
+function showError(err){ 
+    console.error(err); 
+    toast(err.message || String(err), true); 
+}
 // ==== Events ====
 document.addEventListener('DOMContentLoaded', ()=>{
   initSupabase();
   buildTableSelect();
   buildForm(currentTable, null);
   loadRows(true);
-
-  $('#btn-connect').onclick = ()=>{ initSupabase(); loadRows(true); };
-  $('#table-select').onchange = (e)=>{ currentTable = e.target.value; page=0; buildForm(currentTable,null); loadRows(true); };
+  
+  $('#btn-connect').onclick = ()=>{ 
+      initSupabase(); 
+      loadRows(true); 
+  };
+  $('#table-select').onchange = (e)=>{ 
+      currentTable = e.target.value; 
+      page=0; 
+      buildForm(currentTable,null); 
+      loadRows(true); 
+  };
   $('#btn-load').onclick = ()=> loadRows(true);
   $('#btn-new').onclick = ()=> buildForm(currentTable, null);
   $('#btn-refresh').onclick = ()=> loadRows(false);
   $('#btn-search').onclick = ()=> loadRows(true);
-  $('#prev-page').onclick = ()=> { if (page>0){ page--; loadRows(false);} };
-  $('#next-page').onclick = ()=> { page++; loadRows(false); };
-  $('#btn-save').onclick = (e)=>{ e.preventDefault(); doSave(); };
-  $('#btn-delete').onclick = (e)=>{ e.preventDefault(); doDelete(); };
-  $('#btn-clear').onclick = (e)=>{ e.preventDefault(); buildForm(currentTable, null); };
-
+  $('#prev-page').onclick = ()=> { 
+      if (page>0){ 
+          page--; 
+          loadRows(false);
+      }
+  };
+  $('#next-page').onclick = ()=> { 
+      page++; 
+      loadRows(false); 
+  };
+  $('#btn-save').onclick = (e)=>{ 
+      e.preventDefault(); 
+      doSave(); 
+  };
+  $('#btn-delete').onclick = (e)=>{ 
+      e.preventDefault(); 
+      // Confirmation moved here
+      if (!editingRow) {
+          toast('Keine Zeile ausgewählt', true);
+          return;
+      }
+      if (confirm('Wirklich löschen?')) {
+          doDelete(); 
+      }
+  };
+  $('#btn-clear').onclick = (e)=>{ 
+      e.preventDefault(); 
+      buildForm(currentTable, null); 
+  };
   // Schnellzugriff
   document.querySelectorAll('[data-jump]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -783,11 +1299,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
       loadRows(true);
     });
   });
-
   // Strg+K → Fokus Suche
   document.addEventListener('keydown', (ev)=>{
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase()==='k'){
-      ev.preventDefault(); $('#search-input').focus();
+      ev.preventDefault(); 
+      $('#search-input').focus();
     }
   });
 });

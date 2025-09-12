@@ -2,1576 +2,900 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Borbarad-DB Data Filler (DSA 4.1 Sonderfertigkeiten)</title>
+  <title>Borbarad-DB – Datenfiller</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Supabase JS v2 -->
+  <!-- Supabase CDN (v2, UMD) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      /* Modernere Farbpalette */
-      --bg-dark: #0f172a; /* Sehr dunkelblau */
-      --bg-panel: #1e293b; /* Panel-Hintergrund */
-      --bg-card: #334155; /* Karten-Hintergrund */
-      --bg-input: #475569; /* Input-Hintergrund */
-      --text-primary: #f1f5f9; /* Haupttext */
-      --text-secondary: #cbd5e1; /* Sekundärtext */
-      --accent-primary: #60a5fa; /* Primärer Akzent (Blau) */
-      --accent-secondary: #818cf8; /* Sekundärer Akzent (Violett) */
-      --success: #34d399; /* Erfolg (Grün) */
-      --warning: #fbbf24; /* Warnung (Gelb) */
-      --error: #f87171; /* Fehler (Rot) */
-      --border: #4b5563; /* Rahmenfarbe */
-      --shadow: rgba(0, 0, 0, 0.5); /* Schatten */
-
-      /* Abgerundete Ecken */
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background-color: var(--bg-dark);
-      color: var(--text-primary);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* Header */
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 24px;
-      background: linear-gradient(90deg, var(--bg-panel), #2d3748);
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 2px 8px var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    header .status-pill {
-      background-color: var(--bg-card);
-      color: var(--text-secondary);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      border: 1px solid var(--border);
-    }
-
-    header .status-pill .status-value {
-      color: var(--accent-primary);
-      font-weight: 500;
-    }
-
-    /* Hauptcontainer */
-    .main-container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* Sidebar */
-    aside {
-      width: 320px;
-      background-color: var(--bg-panel);
-      border-right: 1px solid var(--border);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      overflow-y: auto;
-      flex-shrink: 0;
-    }
-
-    .card {
-      background-color: var(--bg-card);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 6px var(--shadow);
-    }
-
-    .card h3 {
-      margin-top: 0;
-      margin-bottom: 16px;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background-color: var(--bg-input);
-      color: var(--text-primary);
-      font-size: 1rem;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: 2px solid var(--accent-primary);
-      border-color: var(--accent-primary);
-    }
-
-    .btn {
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      border: none;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      font-size: 0.95rem;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      background-color: var(--bg-input);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background-color: #5a677d;
-    }
-
-    .btn-danger {
-      background-color: var(--error);
-      color: white;
-    }
-
-    .btn-danger:hover:not(:disabled) {
-      background-color: #ef4444;
-    }
-
-    .btn-icon {
-      padding: 8px;
-      font-size: 1.1rem;
-    }
-
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .grid {
-      display: grid;
-      gap: 16px;
-    }
-
-    .cols-2 {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .cols-3 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .help-text {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    kbd {
-      background-color: var(--bg-input);
-      border: 1px solid var(--border);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .badge-fk {
-      background-color: #4f46e5;
-      color: white;
-    }
-
-    .badge-enum {
-      background-color: #7c3aed;
-      color: white;
-    }
-
-    .badge-readonly {
-      background-color: #6b7280;
-      color: white;
-    }
-
-    /* Tree View */
-    .tree-view {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      font-size: 0.95rem;
-    }
-
-    .tree-item {
-      margin: 0;
-      padding: 0;
-    }
-
-    .tree-toggle {
-      display: flex;
-      align-items: center;
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.2s;
-    }
-
-    .tree-toggle:hover {
-      background-color: #4a5568;
-    }
-
-    .tree-toggle.expanded {
-      background-color: #2d3748;
-    }
-
-    .tree-toggle::before {
-      content: '▶';
-      margin-right: 8px;
-      font-size: 0.8rem;
-      transition: transform 0.2s;
-    }
-
-    .tree-toggle.expanded::before {
-      transform: rotate(90deg);
-    }
-
-    .tree-leaf {
-      padding-left: 24px;
-    }
-
-    .tree-leaf .tree-toggle {
-      padding-left: 24px;
-    }
-
-    .tree-leaf .tree-toggle::before {
-      content: '•';
-      margin-right: 12px;
-      transform: none !important;
-      color: var(--accent-primary);
-    }
-
-    .tree-link {
-      display: block;
-      padding: 6px 10px 6px 34px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      color: var(--text-secondary);
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-
-    .tree-link:hover {
-      background-color: #4a5568;
-      color: var(--text-primary);
-    }
-
-    .tree-link.active {
-      background-color: var(--accent-primary);
-      color: white;
-      font-weight: 500;
-    }
-
-    .tree-group {
-      list-style: none;
-      padding-left: 16px;
-      margin: 0;
-      display: none;
-    }
-
-    .tree-group.expanded {
-      display: block;
-    }
-
-    /* Main Content */
-    main {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .toolbar > * {
-      flex-shrink: 0;
-    }
-
-    .search-container {
-      flex: 1;
-      max-width: 500px;
-      position: relative;
-    }
-
-    .search-container input {
-      padding-left: 36px;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-secondary);
-    }
-
-    .table-info {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
-    .pagination {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .table-container {
-      overflow-x: auto;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 6px var(--shadow);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: var(--bg-card);
-      color: var(--text-primary);
-    }
-
-    th, td {
-      padding: 12px 16px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    th {
-      background-color: #2d3748;
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    tr:hover {
-      background-color: #4a5568;
-    }
-
-    .action-cell {
-      display: flex;
-      gap: 8px;
-    }
-
-    .form-card {
-      background-color: var(--bg-card);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 6px var(--shadow);
-    }
-
-    .form-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .form-header h2 {
-      margin: 0;
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .form-mode {
-      font-size: 0.9rem;
-      color: var(--accent-primary);
-      background-color: rgba(96, 165, 250, 0.1);
-      padding: 4px 10px;
-      border-radius: var(--radius-sm);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .form-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-field-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .form-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      margin-top: 20px;
-    }
-
-    .op-status {
-      flex: 1;
-      font-size: 0.9rem;
-      min-width: 200px;
-    }
-
-    .op-status .success {
-      color: var(--success);
-    }
-
-    .op-status .error {
-      color: var(--error);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 900px) {
-      .main-container {
-        flex-direction: column;
-      }
-
-      aside {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .cols-3 {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      header {
-        padding: 12px 16px;
-        gap: 10px;
-      }
-
-      header h1 {
-        font-size: 1.2rem;
-      }
-
-      .status-pill {
-        font-size: 0.8rem;
-        padding: 4px 8px;
-      }
-
-      main {
-        padding: 16px;
-      }
-
-      .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .search-container {
-        max-width: 100%;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .cols-2 {
-        grid-template-columns: 1fr;
-      }
-    }
+    :root { --bg:#0b1020; --fg:#e7ecff; --muted:#a6b0d6; --card:#121938; --accent:#7aa2f7; --ok:#2ec27e; --warn:#ffb86b; --err:#ff6b6b; }
+    html,body { background:var(--bg); color:var(--fg); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; margin:0; }
+    .wrap { max-width:1100px; margin:0 auto; padding:24px; }
+    h1 { font-size:22px; margin:0 0 16px }
+    h2 { font-size:18px; margin:24px 0 8px }
+    .card { background:var(--card); border:1px solid #1c2754; border-radius:14px; padding:16px; margin:14px 0; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .col { flex:1 1 260px; min-width:240px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
+    input[type="text"], input[type="number"], textarea, select {
+      width:100%; background:#0c1430; color:var(--fg); border:1px solid #20306a; border-radius:10px; padding:10px; outline:none;
+    }
+    textarea { min-height:72px; }
+    .btn { background:var(--accent); color:#0a0e1f; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; }
+    .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+    .btn.warn { background:var(--warn); }
+    .btn.err { background:var(--err); }
+    .btn.ok { background:var(--ok); color:#07130b; }
+    .stack { display:flex; gap:10px; flex-wrap:wrap; }
+    .pill { background:#0f1733; border:1px solid #22336f; border-radius:999px; padding:6px 10px; font-size:12px; }
+    .hr { height:1px; background:#233167; margin:16px 0; }
+    .hint { color:var(--muted); font-size:12px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; }
+    details > summary { cursor:pointer; margin:8px 0; color:var(--muted) }
+    .stepper { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px }
+    .stepper .step { padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #30408b; color:var(--muted) }
+    .step.active { background:var(--accent); color:#071020; border-color:var(--accent); }
+    .log { white-space:pre-wrap; background:#0a102a; border:1px dashed #25326a; padding:10px; border-radius:10px; font-size:12px; max-height:200px; overflow:auto; }
+    .list { border:1px solid #24306a; border-radius:10px; padding:10px; background:#0b1230; }
+    .small { font-size:12px; }
+    kbd { background:#0a1335; border:1px solid #2a3c8a; border-radius:6px; padding:2px 6px; font-size:12px; }
   </style>
 </head>
 <body>
-<header>
-  <h1>🧙‍♂️ Borbarad-DB Data Filler</h1>
-  <div class="status-pill">Status: <span id="status" class="status-value">Verbinde…</span></div>
-  <div class="status-pill">Projekt: <span class="status-value">Supabase</span></div>
-</header>
+<div class="wrap">
+  <h1>⚔️ Borbarad-DB Datenfiller</h1>
+  <div class="hint">Einfacher Wizard zum kompletten Anlegen von <b>Sonderfertigkeiten</b> inkl. Stufen, Kosten, Quellen, Voraussetzungen (AND/OR), Geltung, Nutzung, Ressourcen, Wirkungen, Effekten, Konflikten.</div>
 
-<div class="main-container">
-  <aside>
-    <div class="card">
-      <h3>🔗 Verbindung</h3>
+  <!-- Stepper -->
+  <div class="stepper" id="stepper"></div>
+
+  <!-- STEP 0: Supabase -->
+  <div class="card" data-step="0">
+    <h2>0) Verbindung</h2>
+    <div class="row">
+      <div class="col">
+        <label>Supabase URL</label>
+        <input id="sb-url" type="text" value="https://uzgizoikrricctzznlzr.supabase.co" />
+      </div>
+      <div class="col">
+        <label>Anon API Key</label>
+        <input id="sb-key" type="text" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6Z2l6b2lrcnJpY2N0enpubHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDc1MTksImV4cCI6MjA3MjQ4MzUxOX0.MJFMo6PrBXq_3xQGqYeyMKZx0JTqouFBW3eqteXgsm8" />
+      </div>
+    </div>
+    <div class="stack">
+      <button class="btn" id="btn-connect">Verbinden</button>
+      <span id="conn-status" class="pill">nicht verbunden</span>
+    </div>
+    <div class="hint small">Hinweis: Für Inserts/Selects muss RLS passende Policies erlauben. Tabellen- & Spaltennamen entsprechen dem vereinfachten Schema.</div>
+  </div>
+
+  <!-- STEP 1: SF Basis -->
+  <div class="card" data-step="1" hidden>
+    <h2>1) Sonderfertigkeit – Basis</h2>
+    <div class="grid">
+      <div>
+        <label>Name *</label>
+        <input id="sf-name" type="text" placeholder="z.B. Meisterparade" />
+      </div>
+      <div>
+        <label>Kurznamen / Alias</label>
+        <input id="sf-kurz" type="text" />
+      </div>
+      <div>
+        <label>Kategorie *</label>
+        <select id="sf-kategorie">
+          <option>Allgemein</option><option>Kampf</option><option>Magie</option><option>Liturgie</option>
+          <option>Handwerk</option><option>Gesellschaft</option><option>Natur</option><option>Wissen</option>
+          <option>Götter/Kulte</option><option>Sonstiges</option>
+        </select>
+      </div>
+      <div>
+        <label>Status *</label>
+        <select id="sf-status"><option>offiziell</option><option>inoffiziell</option><option>hausregel</option><option>entfernt</option></select>
+      </div>
+      <div>
+        <label>Regelwerk</label>
+        <input id="sf-regelwerk" type="text" value="DSA 4.1" />
+      </div>
+      <div>
+        <label>Einzigartig?</label>
+        <select id="sf-einzigartig"><option value="false">nein</option><option value="true">ja</option></select>
+      </div>
+      <div>
+        <label>Gestuft?</label>
+        <select id="sf-gestuft"><option value="false">nein</option><option value="true">ja</option></select>
+      </div>
+      <div class="col" style="grid-column:1/-1">
+        <label>Kurzbeschreibung</label>
+        <textarea id="sf-desc"></textarea>
+      </div>
+      <div class="col" style="grid-column:1/-1">
+        <label>Bemerkung (intern)</label>
+        <textarea id="sf-note"></textarea>
+      </div>
+    </div>
+    <div class="stack">
+      <button class="btn" id="btn-save-sf">SF anlegen</button>
+      <span class="pill" id="sf-created">ID: —</span>
+      <button class="btn ghost" id="btn-next-1">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Stufen -->
+  <div class="card" data-step="2" hidden>
+    <h2>2) Stufen/Varianten (optional; nur wenn „gestuft“)</h2>
+    <div class="list" id="stufe-list"></div>
+    <div class="stack">
+      <input id="stufe-bez" type="text" placeholder='Bezeichnung (z.B. "I")' />
+      <input id="stufe-ord" type="number" placeholder="Reihenfolge" value="1" />
+      <button class="btn" id="btn-add-stufe">Stufe hinzufügen</button>
+    </div>
+    <div class="stack">
+      <button class="btn ghost" id="btn-next-2">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Kosten -->
+  <div class="card" data-step="3" hidden>
+    <h2>3) AP-Kosten</h2>
+    <div id="kosten-form" class="grid"></div>
+    <div class="stack">
+      <button class="btn" id="btn-save-kosten">Kosten speichern</button>
+      <button class="btn ghost" id="btn-next-3">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Quellen -->
+  <div class="card" data-step="4" hidden>
+    <h2>4) Quellen</h2>
+    <div id="quelle-form" class="grid"></div>
+    <div class="stack">
+      <button class="btn" id="btn-save-quellen">Quellen speichern</button>
+      <button class="btn ghost" id="btn-next-4">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Voraussetzungen -->
+  <div class="card" data-step="5" hidden>
+    <h2>5) Voraussetzungen</h2>
+    <div id="pre-group-list"></div>
+    <div class="stack">
+      <select id="pre-logik"><option>AND</option><option>OR</option></select>
+      <input id="pre-title" type="text" placeholder="Titel (optional)" />
+      <button class="btn" id="btn-add-pre-grp">Gruppe hinzufügen</button>
+    </div>
+    <details>
+      <summary>Item hinzufügen (gewählte Gruppe)</summary>
+      <div class="grid">
+        <div>
+          <label>Gruppe</label>
+          <select id="pre-group-select"></select>
+        </div>
+        <div>
+          <label>Typ</label>
+          <select id="pre-typ">
+            <option value="attr">Attribut</option>
+            <option value="katalog">Katalog (Talent/Waffengruppe/...)</option>
+            <option value="sf">Sonderfertigkeit</option>
+            <option value="text">Freitext</option>
+          </select>
+        </div>
+        <div id="pre-attr" class="row">
+          <div class="col">
+            <label>Eigenschaft</label>
+            <select id="pre-attr-code"><option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option></select>
+          </div>
+          <div class="col">
+            <label>Vergleich</label>
+            <select id="pre-attr-op"><option>&gt;=</option><option>&gt;</option><option>=</option><option>&lt;=</option><option>&lt;</option><option>!=</option></select>
+          </div>
+          <div class="col">
+            <label>Wert</label>
+            <input id="pre-attr-val" type="number" />
+          </div>
+        </div>
+        <div id="pre-katalog" class="row" hidden>
+          <div class="col">
+            <label>Katalog-Typ</label>
+            <select id="pre-katalog-typ">
+              <option>talent</option><option>waffengruppe</option><option>tradition</option>
+              <option>vorteil</option><option>nachteil</option><option>kultur</option><option>profession</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Name (suchen/neu)</label>
+            <input id="pre-katalog-name" type="text" placeholder="z.B. Schwerter" />
+          </div>
+          <div class="col">
+            <label>Min-Wert (optional)</label>
+            <input id="pre-katalog-min" type="number" />
+          </div>
+          <div class="col">
+            <label>Label</label>
+            <input id="pre-katalog-label" type="text" placeholder="TaW / Anzahl / Stufe" />
+          </div>
+        </div>
+        <div id="pre-sf" class="row" hidden>
+          <div class="col">
+            <label>SF suchen (Name)</label>
+            <input id="pre-sf-search" type="text" placeholder="Name der benötigten SF" />
+          </div>
+          <div class="col">
+            <label>benötigte Stufe (Text)</label>
+            <input id="pre-sf-stufe" type="text" placeholder='z.B. "I"' />
+          </div>
+        </div>
+        <div id="pre-text" class="row" hidden>
+          <div class="col" style="min-width:100%">
+            <label>Freitext</label>
+            <textarea id="pre-freetext"></textarea>
+          </div>
+        </div>
+        <div class="stack">
+          <button class="btn" id="btn-add-pre-item">Item speichern</button>
+        </div>
+      </div>
+    </details>
+    <div class="stack">
+      <button class="btn ghost" id="btn-next-5">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: Geltungsbereich -->
+  <div class="card" data-step="6" hidden>
+    <h2>6) Geltungsbereich</h2>
+    <div class="row">
+      <div class="col">
+        <label>Typ</label>
+        <select id="gelt-typ"><option>talent</option><option>waffengruppe</option><option>tradition</option></select>
+      </div>
+      <div class="col">
+        <label>Name (suchen/neu)</label>
+        <input id="gelt-name" type="text" placeholder="z.B. Schwerter" />
+      </div>
+      <div class="col">
+        <label>Kommentar</label>
+        <input id="gelt-kommentar" type="text" />
+      </div>
+    </div>
+    <div class="stack">
+      <button class="btn" id="btn-add-geltung">Geltung hinzufügen</button>
+    </div>
+    <div id="geltung-list" class="list"></div>
+    <div class="stack">
+      <button class="btn ghost" id="btn-next-6">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 7: Nutzung + Ressourcen -->
+  <div class="card" data-step="7" hidden>
+    <h2>7) Nutzung</h2>
+    <div class="row">
+      <div class="col">
+        <label>Stufe (optional)</label>
+        <select id="nut-stufe"></select>
+      </div>
+      <div class="col">
+        <label>Aktivierung</label>
+        <select id="nut-aktiv"><option>passiv</option><option>frei</option><option>aktion</option><option>reaktion</option><option>permanent</option></select>
+      </div>
+      <div class="col">
+        <label>Aktionen (z.B. 1.0)</label>
+        <input id="nut-aktionen" type="number" step="0.1" />
+      </div>
+      <div class="col">
+        <label>Dauer-Typ</label>
+        <input id="nut-dauertyp" type="text" placeholder="sofortig / x KR / anhaltend / ..." />
+      </div>
+      <div class="col">
+        <label>Dauer-Wert</label>
+        <input id="nut-dauerwert" type="text" placeholder="2 KR / TaP*/2 KR / ..." />
+      </div>
+      <div class="col">
+        <label>Bedingung</label>
+        <input id="nut-beding" type="text" placeholder="z.B. nur im Nahkampf" />
+      </div>
+    </div>
+    <div class="stack">
+      <button class="btn" id="btn-save-nutzung">Nutzung speichern</button>
+      <span class="pill" id="nut-id">nutzung_id: —</span>
+    </div>
+    <details>
+      <summary>Ressource hinzufügen</summary>
+      <div class="row">
+        <div class="col">
+          <label>Typ</label>
+          <select id="res-typ"><option>AP</option><option>AsP</option><option>KaP</option><option>AuP</option><option>LE</option><option>sonstige</option></select>
+        </div>
+        <div class="col">
+          <label>Betrag (fix) – oder Formel unten</label>
+          <input id="res-betrag" type="number" />
+        </div>
+        <div class="col">
+          <label>Formel</label>
+          <input id="res-formel" type="text" placeholder="optional" />
+        </div>
+        <div class="col">
+          <label>Bemerkung</label>
+          <input id="res-bem" type="text" />
+        </div>
+      </div>
       <div class="stack">
-        <div class="form-field">
-          <label for="sb-url">Supabase URL</label>
-          <input id="sb-url" type="text" value="https://uzgizoikrricctzznlzr.supabase.co" />
-        </div>
-        <div class="form-field">
-          <label for="sb-key">Anon/Public API Key</label>
-          <input id="sb-key" type="text" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6Z2l6b2lrcnJpY2N0enpubHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDc1MTksImV4cCI6MjA3MjQ4MzUxOX0.MJFMo6PrBXq_3xQGqYeyMKZx0JTqouFBW3eqteXgsm8" />
-        </div>
-        <button id="btn-connect" class="btn btn-primary">Neu verbinden</button>
-        <div class="help-text">⚠️ Nutze hier nur <b>Public/Anon</b>-Keys. Für Admin-Aufgaben <i>nicht</i> geeignet.</div>
+        <button class="btn" id="btn-add-ress">Ressource speichern</button>
+      </div>
+      <div id="ress-list" class="list"></div>
+    </details>
+    <div class="stack">
+      <button class="btn ghost" id="btn-next-7">Weiter</button>
+    </div>
+  </div>
+
+  <!-- STEP 8: Wirkungen + Effekte -->
+  <div class="card" data-step="8" hidden>
+    <h2>8) Wirkungen</h2>
+    <div class="row">
+      <div class="col">
+        <label>Stufe (optional)</label>
+        <select id="wtext-stufe"></select>
+      </div>
+      <div class="col" style="flex:1 1 100%">
+        <label>Wirkungstext</label>
+        <textarea id="wtext-text"></textarea>
       </div>
     </div>
-
-    <div class="card">
-      <h3>📂 Daten</h3>
+    <div class="stack">
+      <button class="btn" id="btn-add-wtext">Wirkungstext speichern</button>
+    </div>
+    <details>
+      <summary>Strukturierter Effekt</summary>
+      <div class="grid">
+        <div>
+          <label>Stufe (optional)</label>
+          <select id="eff-stufe"></select>
+        </div>
+        <div>
+          <label>Ziel-Typ</label>
+          <input id="eff-zieltyp" type="text" placeholder="AT / PA / INI / TP / MR / Talentprobe / ..." />
+        </div>
+        <div>
+          <label>Ziel-Katalog (optional)</label>
+          <div class="row">
+            <select id="eff-kat-typ">
+              <option value="">—</option>
+              <option>talent</option><option>waffengruppe</option><option>tradition</option>
+            </select>
+            <input id="eff-kat-name" type="text" placeholder="z.B. Schwerter" />
+          </div>
+        </div>
+        <div>
+          <label>Operator</label>
+          <select id="eff-op"><option>add</option><option>mult</option><option>ersetze</option></select>
+        </div>
+        <div>
+          <label>Wert (numerisch)</label>
+          <input id="eff-num" type="number" step="0.1" />
+        </div>
+        <div>
+          <label>Würfelwert (Text)</label>
+          <input id="eff-wurf" type="text" placeholder="+1W6" />
+        </div>
+        <div>
+          <label>Bedingung</label>
+          <input id="eff-bed" type="text" />
+        </div>
+        <div>
+          <label>Stapelregel</label>
+          <input id="eff-stack" type="text" />
+        </div>
+      </div>
       <div class="stack">
-        <ul id="table-tree" class="tree-view"></ul>
-        <div class="btn-group">
-          <button id="btn-load" class="btn btn-secondary">Aktualisieren</button>
-          <button id="btn-new" class="btn btn-secondary">Neu anlegen</button>
-        </div>
-        <div class="help-text">Tipp: <kbd>Strg</kbd>+<kbd>K</kbd> für Suche in Datensätzen.</div>
+        <button class="btn" id="btn-add-eff">Effekt speichern</button>
       </div>
+    </details>
+    <div class="stack">
+      <button class="btn ghost" id="btn-next-8">Weiter</button>
     </div>
+  </div>
 
-    <div class="card">
-      <h3>ℹ️ Legende</h3>
-      <div class="stack">
-        <div><span class="badge badge-fk">FK</span> Fremdschlüssel-Dropdown</div>
-        <div><span class="badge badge-enum">ENUM</span> feste Auswahl</div>
-        <div><span class="badge badge-readonly">RO</span> Nur lesbar</div>
+  <!-- STEP 9: Konflikte -->
+  <div class="card" data-step="9" hidden>
+    <h2>9) Konflikte (inkompatible SFs)</h2>
+    <div class="row">
+      <div class="col">
+        <label>Gegen-SF (Name suchen)</label>
+        <input id="konf-suche" type="text" placeholder="Name..." />
+      </div>
+      <div class="col">
+        <label>Bemerkung</label>
+        <input id="konf-bem" type="text" />
       </div>
     </div>
-  </aside>
+    <div class="stack">
+      <button class="btn" id="btn-add-konflikt">Konflikt speichern</button>
+    </div>
+    <div id="konf-list" class="list"></div>
+    <div class="stack">
+      <button class="btn ghost" id="btn-next-9">Weiter</button>
+    </div>
+  </div>
 
-  <main>
-    <div class="card">
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input id="search-input" type="text" placeholder="Suche (z. B. name: Finte)" />
-        </div>
-        <button id="btn-search" class="btn btn-primary">Suchen</button>
-        <span class="table-info" id="rows-count"></span>
-        <span style="flex:1"></span>
-        <button id="btn-refresh" class="btn btn-secondary btn-icon">🔄</button>
-      </div>
-      <div class="table-container">
-        <table id="rows-table"></table>
-      </div>
-      <div class="pagination">
-        <button id="prev-page" class="btn btn-secondary">◀ Zurück</button>
-        <span class="table-info" id="page-info"></span>
-        <button id="next-page" class="btn btn-secondary">Weiter ▶</button>
-      </div>
+  <!-- STEP 10: Review/Checkliste -->
+  <div class="card" data-step="10" hidden>
+    <h2>10) Review & Checkliste</h2>
+    <div id="checkliste" class="list"></div>
+    <div class="stack">
+      <button class="btn" id="btn-refresh-check">Checkliste aktualisieren</button>
+      <button class="btn warn" id="btn-del-sf">Diese SF löschen (Rollback)</button>
     </div>
+  </div>
 
-    <div class="form-card">
-      <div class="form-header">
-        <h2>📝 Formular</h2>
-        <span id="form-mode" class="form-mode">Neu</span>
-      </div>
-      <form id="editor" class="form-grid"></form>
-      <div class="form-actions">
-        <button id="btn-save" class="btn btn-primary">💾 Speichern</button>
-        <button id="btn-delete" class="btn btn-danger">🗑 Löschen</button>
-        <button id="btn-clear" class="btn btn-secondary">Felder leeren</button>
-        <span id="op-status" class="op-status"></span>
-      </div>
-    </div>
-  </main>
+  <div class="card">
+    <h2>Log</h2>
+    <div id="log" class="log">Bereit.</div>
+  </div>
 </div>
 
 <script>
-/** ========= Basiskonfiguration ========= **/
-const ENUMS = {
-  attribute_code: ['MU','KL','IN','CH','FF','GE','KO','KK'],
-  aktionstyp: ['passiv','frei','aktion','reaktion','permanent'],
-  ressourcen_typ: ['AP','AsP','KaP','AuP','LE','sonstige'],
-  voraussetz_logik: ['alle','mindestens_eine'],
-  sf_status: ['offiziell','inoffiziell','hausregel','entfernt'],
-  wirk_operator: ['add','mult','ersetze'],
-  vergleich_op: ['>=','>','=','<=','<','!=']
-};
-// Schema-Definition: Tabellen + Spalten (Typen + optionale FK)
-const SCHEMA = {
-  // === Stammdaten ===
-  talent: {
-    label: 'Talente',
-    pk: 'id',
-    columns: {
-      id: {type:'integer', readonly:true},
-      name: {type:'text', required:true},
-      gruppe: {type:'text', required:true},
-      regelwerk: {type:'text', default:'DSA 4.1'}
-    }
-  },
-  waffengruppe: {
-    label:'Waffengruppen',
-    pk:'id',
-    columns: { id:{type:'integer',readonly:true}, name:{type:'text',required:true} }
-  },
-  tradition: {
-    label:'Traditionen',
-    pk:'id',
-    columns:{ id:{type:'integer',readonly:true}, name:{type:'text',required:true}, art:{type:'text',required:true} }
-  },
-  vorteil: { label:'Vorteile', pk:'id', columns:{ id:{type:'integer',readonly:true}, name:{type:'text',required:true} } },
-  nachteil: { label:'Nachteile', pk:'id', columns:{ id:{type:'integer',readonly:true}, name:{type:'text',required:true} } },
-  quelle: {
-    label:'Quellen',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      code:{type:'text',required:true},
-      titel:{type:'text',required:true},
-      auflage:{type:'text'},
-      verlag:{type:'text'},
-      jahr:{type:'integer'}
-    }
-  },
-  tag: { label:'Tags', pk:'id', columns:{ id:{type:'integer',readonly:true}, name:{type:'text',required:true} } },
-  // === Kern: Sonderfertigkeit ===
-  sonderfertigkeit: {
-    label:'Sonderfertigkeiten',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      name:{type:'text',required:true},
-      kurzname:{type:'text'},
-      kategorie:{type:'text',required:true}, // Freitext: Allgemein/Kampf/Magie/Liturgie/…
-      status:{type:'enum', enum:'sf_status', default:'offiziell'},
-      regelwerk:{type:'text', default:'DSA 4.1'},
-      beschreibung_kurz:{type:'textarea'},
-      einzigartig:{type:'boolean', default:false},
-      stapelbar:{type:'boolean', default:false},
-      bemerkung:{type:'textarea'}
-    }
-  },
-  // Verknüpfungen
-  sf__tag: {
-    label:'SF ↔ Tag',
-    pk:['sf_id','tag_id'],
-    columns:{
-      sf_id:{type:'fk', ref:{table:'sonderfertigkeit', value:'id', label:'name'}, required:true},
-      tag_id:{type:'fk', ref:{table:'tag', value:'id', label:'name'}, required:true}
-    }
-  },
-  sf__talent: {
-    label:'SF ↔ Talent',
-    pk:['sf_id','talent_id'],
-    columns:{
-      sf_id:{type:'fk', ref:{table:'sonderfertigkeit', value:'id', label:'name'}, required:true},
-      talent_id:{type:'fk', ref:{table:'talent', value:'id', label:'name'}, required:true}
-    }
-  },
-  sf__waffengruppe: {
-    label:'SF ↔ Waffengruppe',
-    pk:['sf_id','waffengruppe_id'],
-    columns:{
-      sf_id:{type:'fk', ref:{table:'sonderfertigkeit', value:'id', label:'name'}, required:true},
-      waffengruppe_id:{type:'fk', ref:{table:'waffengruppe', value:'id', label:'name'}, required:true}
-    }
-  },
-  sf__tradition: {
-    label:'SF ↔ Tradition',
-    pk:['sf_id','tradition_id'],
-    columns:{
-      sf_id:{type:'fk', ref:{table:'sonderfertigkeit', value:'id', label:'name'}, required:true},
-      tradition_id:{type:'fk', ref:{table:'tradition', value:'id', label:'name'}, required:true}
-    }
-  },
-  // Stufen/Varianten + Kosten + Quelle
-  sf_stufe: {
-    label:'Stufen/Varianten',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      bezeichnung:{type:'text',required:true},
-      reihenfolge:{type:'integer',default:1}
-    }
-  },
-  sf_kosten:{
-    label:'AP-Kosten',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      stufe_id:{type:'fk',ref:{table:'sf_stufe',value:'id',label:'bezeichnung'}},
-      betrag:{type:'integer'},
-      ist_variabel:{type:'boolean',default:false},
-      formel:{type:'text'},
-      bemerkung:{type:'textarea'}
-    }
-  },
-  sf_quelle:{
-    label:'SF-Quelle',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      stufe_id:{type:'fk',ref:{table:'sf_stufe',value:'id',label:'bezeichnung'}},
-      quelle_id:{type:'fk',ref:{table:'quelle',value:'id',label:'code'}, required:true},
-      seite:{type:'text'},
-      errata_hint:{type:'textarea'}
-    }
-  },
-  // Voraussetzungen
-  sf_voraussetzung_text:{
-    label:'Voraussetzung (Text)',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      text:{type:'textarea',required:true}
-    }
-  },
-  sf_pre_attribut:{
-    label:'Voraussetzung: Attribut',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      attribut:{type:'enum',enum:'attribute_code',required:true},
-      operator:{type:'enum',enum:'vergleich_op',default:'>='},
-      wert:{type:'integer',required:true}
-    }
-  },
-  sf_pre_talent:{
-    label:'Voraussetzung: Talent',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      talent_id:{type:'fk',ref:{table:'talent',value:'id',label:'name'}, required:true},
-      min_taw:{type:'integer',required:true}
-    }
-  },
-  sf_pre_sf:{
-    label:'Voraussetzung: SF',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      braucht_sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      min_stufe_id:{type:'fk',ref:{table:'sf_stufe',value:'id',label:'bezeichnung'}}
-    }
-  },
-  sf_pre_vorteil:{
-    label:'Voraussetzung: Vorteil',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      vorteil_id:{type:'fk',ref:{table:'vorteil',value:'id',label:'name'}, required:true}
-    }
-  },
-  sf_pre_nachteil:{
-    label:'Voraussetzung: Nachteil',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      nachteil_id:{type:'fk',ref:{table:'nachteil',value:'id',label:'name'}, required:true}
-    }
-  },
-  sf_pre_kultur:{
-    label:'Voraussetzung: Kultur',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      kultur:{type:'text',required:true}
-    }
-  },
-  sf_pre_profession:{
-    label:'Voraussetzung: Profession',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      profession:{type:'text',required:true}
-    }
-  },
-  sf_pre_tradition:{
-    label:'Voraussetzung: Tradition',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      tradition_id:{type:'fk',ref:{table:'tradition',value:'id',label:'name'}, required:true}
-    }
-  },
-  sf_pre_waffengruppe:{
-    label:'Voraussetzung: Waffengruppe',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      waffengruppe_id:{type:'fk',ref:{table:'waffengruppe',value:'id',label:'name'}, required:true}
-    }
-  },
-  sf_voraussetzungsgruppe:{
-    label:'Voraussetzungsgruppe',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      logik:{type:'enum',enum:'voraussetz_logik',default:'alle'},
-      bemerkung:{type:'text'}
-    }
-  },
-  sf_voraussetzungsgruppe_item:{
-    label:'Voraussetzungsgruppe-Item',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      gruppe_id:{type:'fk',ref:{table:'sf_voraussetzungsgruppe',value:'id',label:'id'}, required:true},
-      typ:{type:'text',required:true},
-      ref_id:{type:'integer'},
-      text:{type:'text'}
-    }
-  },
-  // Nutzung / Ressourcen
-  sf_nutzung:{
-    label:'Nutzung',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      stufe_id:{type:'fk',ref:{table:'sf_stufe',value:'id',label:'bezeichnung'}},
-      aktivierung:{type:'enum',enum:'aktionstyp',default:'passiv'},
-      aktionen_kosten:{type:'numeric'},
-      dauer_typ:{type:'text'},
-      dauer_wert:{type:'text'},
-      bedingung:{type:'text'}
-    }
-  },
-  sf_nutzung_ressource:{
-    label:'Nutzungs-Ressource',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      nutzung_id:{type:'fk',ref:{table:'sf_nutzung',value:'id',label:'id'}, required:true},
-      typ:{type:'enum',enum:'ressourcen_typ',required:true},
-      betrag:{type:'integer'},
-      formel:{type:'text'},
-      bemerkung:{type:'text'}
-    }
-  },
-  // Wirkung / Modifikatoren / Konflikte / Versionen
-  sf_wirkung_text:{
-    label:'Wirkung (Text)',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      stufe_id:{type:'fk',ref:{table:'sf_stufe',value:'id',label:'bezeichnung'}},
-      text:{type:'textarea',required:true}
-    }
-  },
-  sf_modifikator:{
-    label:'Modifikator (maschinenlesbar)',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      stufe_id:{type:'fk',ref:{table:'sf_stufe',value:'id',label:'bezeichnung'}},
-      ziel_typ:{type:'text',required:true},
-      ziel_ref:{type:'text'},
-      operator:{type:'enum',enum:'wirk_operator',default:'add'},
-      wert_num:{type:'numeric'},
-      wert_wuerfel:{type:'text'},
-      bedingung:{type:'text'},
-      stapelregel:{type:'text'}
-    }
-  },
-  sf_konflikt:{
-    label:'Konflikt / Ausschluss',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      ausschluss_sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      bemerkung:{type:'text'}
-    }
-  },
-  sf_version:{
-    label:'Version/Änderung',
-    pk:'id',
-    columns:{
-      id:{type:'integer',readonly:true},
-      sf_id:{type:'fk',ref:{table:'sonderfertigkeit',value:'id',label:'name'}, required:true},
-      gueltig_ab:{type:'date',required:true},
-      aenderung:{type:'textarea',required:true}
-    }
-  }
-};
-
-// ======== Struktur für die Baumansicht ========
-const TABLE_GROUPS = [
-  {
-    name: "Stammdaten",
-    icon: "📚",
-    tables: ["talent", "waffengruppe", "tradition", "vorteil", "nachteil", "quelle", "tag"]
-  },
-  {
-    name: "Sonderfertigkeit",
-    icon: "⭐",
-    tables: ["sonderfertigkeit"],
-    children: [
-      {
-        name: "Verknüpfungen",
-        icon: "🔗",
-        tables: ["sf__tag", "sf__talent", "sf__waffengruppe", "sf__tradition"]
-      },
-      {
-        name: "Stufen/Kosten/Quelle",
-        icon: "📊",
-        tables: ["sf_stufe", "sf_kosten", "sf_quelle"]
-      },
-      {
-        name: "Voraussetzungen",
-        icon: "🔒",
-        tables: [
-          "sf_voraussetzung_text",
-          "sf_pre_attribut",
-          "sf_pre_talent",
-          "sf_pre_sf",
-          "sf_pre_vorteil",
-          "sf_pre_nachteil",
-          "sf_pre_kultur",
-          "sf_pre_profession",
-          "sf_pre_tradition",
-          "sf_pre_waffengruppe",
-          "sf_voraussetzungsgruppe",
-          "sf_voraussetzungsgruppe_item"
-        ]
-      },
-      {
-        name: "Nutzung/Wirkung",
-        icon: "⚡",
-        tables: [
-          "sf_nutzung",
-          "sf_nutzung_ressource",
-          "sf_wirkung_text",
-          "sf_modifikator"
-        ]
-      },
-      {
-        name: "Sonstiges",
-        icon: "🧩",
-        tables: ["sf_konflikt", "sf_version"]
-      }
-    ]
-  }
-];
-
-// ======= Laufzeit =======
+/** ---------- Supabase Setup ---------- **/
 let client = null;
-let currentTable = 'sonderfertigkeit';
-let editingRow = null;
-let page = 0, pageSize = 25;
-let context = null; // { fromTable: 'sonderfertigkeit', fromId: 123 }
-
-const $ = (sel) => document.querySelector(sel);
-const $rowsTable = $('#rows-table');
-const $rowsCount = $('#rows-count');
-const $pageInfo = $('#page-info');
-const $status = $('#status');
-
-function initSupabase(){
-  const url = $('#sb-url').value.trim();
-  const key = $('#sb-key').value.trim();
-  client = supabase.createClient(url, key, { auth: { persistSession: false } });
-  $status.textContent = 'Verbunden';
-  $status.className = 'status-value'; // Reset class
-}
-
-function fmt(v){
-  if (v === null || v === undefined) return '—';
-  if (typeof v === 'boolean') return v ? 'true' : 'false';
-  return String(v);
-}
-
-function buildTableTree() {
-  const tree = $('#table-tree');
-  tree.innerHTML = '';
-
-  function createTreeItem(group, isChild = false) {
-    const li = document.createElement('li');
-    li.className = 'tree-item';
-
-    if (group.tables) {
-      // Gruppe mit Tabellen
-      const toggle = document.createElement('div');
-      toggle.className = 'tree-toggle';
-      toggle.innerHTML = `<span>${group.icon || '📁'} ${group.name}</span>`;
-      
-      const groupList = document.createElement('ul');
-      groupList.className = 'tree-group';
-      
-      toggle.addEventListener('click', () => {
-        const isExpanded = groupList.classList.contains('expanded');
-        groupList.classList.toggle('expanded', !isExpanded);
-        toggle.classList.toggle('expanded', !isExpanded);
-      });
-
-      li.appendChild(toggle);
-      
-      group.tables.forEach(tableName => {
-        const tableDef = SCHEMA[tableName];
-        if (!tableDef) return;
-        const tableLi = document.createElement('li');
-        tableLi.className = 'tree-leaf';
-        const link = document.createElement('a');
-        link.href = '#';
-        link.className = 'tree-link';
-        if (tableName === currentTable) link.classList.add('active');
-        link.dataset.table = tableName;
-        link.innerHTML = `📄 ${tableDef.label || tableName}`;
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          switchTable(tableName);
-        });
-        tableLi.appendChild(link);
-        groupList.appendChild(tableLi);
-      });
-
-      li.appendChild(groupList);
-    } else if (group.children) {
-      // Hauptgruppe mit Kindern
-      const toggle = document.createElement('div');
-      toggle.className = 'tree-toggle';
-      toggle.innerHTML = `<span>${group.icon || '📁'} ${group.name}</span>`;
-      
-      const groupList = document.createElement('ul');
-      groupList.className = 'tree-group';
-      
-      toggle.addEventListener('click', () => {
-        const isExpanded = groupList.classList.contains('expanded');
-        groupList.classList.toggle('expanded', !isExpanded);
-        toggle.classList.toggle('expanded', !isExpanded);
-      });
-
-      li.appendChild(toggle);
-      
-      // Haupttabelle
-      const mainTable = group.tables?.[0];
-      if (mainTable) {
-        const mainTableDef = SCHEMA[mainTable];
-        const mainTableLi = document.createElement('li');
-        mainTableLi.className = 'tree-leaf';
-        const mainLink = document.createElement('a');
-        mainLink.href = '#';
-        mainLink.className = 'tree-link';
-        if (mainTable === currentTable) mainLink.classList.add('active');
-        mainLink.dataset.table = mainTable;
-        mainLink.innerHTML = `⭐ ${mainTableDef.label || mainTable}`;
-        mainLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          switchTable(mainTable);
-        });
-        mainTableLi.appendChild(mainLink);
-        groupList.appendChild(mainTableLi);
-      }
-
-      // Kindgruppen
-      group.children.forEach(childGroup => {
-        const childLi = createTreeItem(childGroup, true);
-        groupList.appendChild(childLi);
-        
-        // Tabellen in Kindgruppen verlinken auch zur Haupttabelle
-        childLi.querySelectorAll('.tree-link').forEach(link => {
-            const tableName = link.dataset.table;
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Setze Kontext
-                if (editingRow && editingRow.id) {
-                    context = { fromTable: mainTable, fromId: editingRow.id, fromLabel: editingRow.name || editingRow.bezeichnung };
-                }
-                switchTable(tableName);
-            });
-        });
-      });
-
-      li.appendChild(groupList);
-    }
-    return li;
-  }
-
-  TABLE_GROUPS.forEach(group => {
-    const item = createTreeItem(group);
-    tree.appendChild(item);
+let currentSfId = null;
+let currentGestuft = false;
+let stufen = []; // cache
+const $ = (q) => document.querySelector(q);
+const $$ = (q) => Array.from(document.querySelectorAll(q));
+const log = (m, type="") => {
+  const el = $("#log");
+  const prefix = type==="err" ? "❌ " : type==="ok" ? "✅ " : type==="warn" ? "⚠️ " : "• ";
+  el.textContent += "\\n" + prefix + m;
+  el.scrollTop = el.scrollHeight;
+};
+const setStepper = (active=0) => {
+  const steps = [
+    "Verbindung","SF Basis","Stufen","Kosten","Quellen","Voraussetzungen",
+    "Geltung","Nutzung","Wirkungen","Konflikte","Review"
+  ];
+  const s = $("#stepper");
+  s.innerHTML = "";
+  steps.forEach((t,i)=>{
+    const span = document.createElement("span");
+    span.className = "step" + (i===active?" active":"");
+    span.textContent = (i)+") "+t;
+    s.appendChild(span);
   });
-}
+  $$("[data-step]").forEach(div => div.hidden = parseInt(div.dataset.step,10) !== active);
+};
+setStepper(0);
 
-function switchTable(tableName) {
-  currentTable = tableName;
-  page = 0;
-  buildTableTree(); // Aktualisiere aktiven Link
-  buildForm(tableName, null);
-  loadRows(true);
-}
+// show/hide blocks helpers
+$("#pre-typ").addEventListener("change", ()=>{
+  const v = $("#pre-typ").value;
+  $("#pre-attr").hidden = v!=="attr";
+  $("#pre-katalog").hidden = v!=="katalog";
+  $("#pre-sf").hidden = v!=="sf";
+  $("#pre-text").hidden = v!=="text";
+});
 
-function buildForm(table, row=null){
-  const def = SCHEMA[table];
-  const form = $('#editor');
-  form.innerHTML = '';
-  
-  let modeText = 'Neu';
-  if (row) {
-    modeText = `Bearbeiten (#${row[def.pk] ?? '–'})`;
-  } else if (context && context.fromTable && context.fromId) {
-    modeText = `Neu für ${context.fromLabel} (#${context.fromId})`;
-  }
-  $('#form-mode').textContent = modeText;
-  
-  editingRow = row;
-  
-  for (const [col, meta] of Object.entries(def.columns)){
-    // Verstecke das FK-Feld zur Haupttabelle, wenn ein Kontext vorliegt
-    if (context && context.fromTable && col === `${context.fromTable}_id` && meta.type === 'fk') {
-        if (!row) { // Nur beim Neuanlegen verstecken und vorbelegen
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.id = `f_${col}`;
-            hiddenInput.value = context.fromId;
-            form.appendChild(hiddenInput);
-        }
-        continue; // Feld nicht im Formular anzeigen
-    }
-    
-    const wrap = document.createElement('div'); wrap.className = 'form-field';
-    
-    const labelWrap = document.createElement('div'); labelWrap.className = 'form-field-header';
-    const label = document.createElement('label');
-    label.textContent = col;
-    labelWrap.appendChild(label);
-    
-    let badges = [];
-    if (meta.type === 'fk') badges.push('<span class="badge badge-fk">FK</span>');
-    if (meta.type === 'enum') badges.push('<span class="badge badge-enum">ENUM</span>');
-    if (meta.readonly) badges.push('<span class="badge badge-readonly">RO</span>');
-    if (badges.length > 0) {
-        labelWrap.innerHTML += badges.join(' ');
-    }
-    
-    let input;
-    const value = row ? row[col] : (meta.default ?? null);
-    if (meta.type === 'textarea'){ 
-        input = document.createElement('textarea'); 
-        input.rows = 4;
-        input.value = value ?? ''; 
-    }
-    else if (meta.type === 'boolean'){ 
-        input = document.createElement('select');
-        ['', 'true', 'false'].forEach(v=>{
-            const o=document.createElement('option'); 
-            o.value=v; 
-            o.textContent=v===''?'(NULL)':(v==='true'?'Ja':'Nein'); 
-            input.appendChild(o);
-        });
-        input.value = value === null || value === undefined ? '' : (value ? 'true' : 'false');
-    }
-    else if (meta.type === 'enum'){
-        input = document.createElement('select');
-        const opts = ENUMS[meta.enum] || [];
-        const nullOpt = document.createElement('option'); nullOpt.value=''; nullOpt.textContent='(NULL)';
-        input.appendChild(nullOpt);
-        opts.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;input.appendChild(o);});
-        input.value = value ?? (meta.default ?? '');
-    }
-    else if (meta.type === 'fk'){
-        input = document.createElement('select');
-        input.dataset.fk = JSON.stringify(meta.ref);
-        const nullOpt = document.createElement('option'); nullOpt.value=''; nullOpt.textContent='(NULL)';
-        input.appendChild(nullOpt);
-        // später befüllen:
-        populateFkOptions(input, value);
-        // Suche-Button
-        const btnWrap = document.createElement('div');
-        btnWrap.className = 'stack';
-        const btn = document.createElement('button'); 
-        btn.type='button'; 
-        btn.className='btn btn-secondary btn-icon'; 
-        btn.textContent='🔎';
-        btn.title = 'FK-Optionen neu laden';
-        btn.onclick = ()=> populateFkOptions(input, input.value || null, true);
-        btnWrap.appendChild(input);
-        btnWrap.appendChild(btn);
-        wrap.appendChild(labelWrap);
-        wrap.appendChild(btnWrap);
-        form.appendChild(wrap);
-        continue; // Skip the rest of the loop for this field
-    }
-    else if (meta.type === 'integer'){ 
-        input = document.createElement('input'); 
-        input.type='number'; 
-        input.step='1'; 
-        input.value = value ?? ''; 
-    }
-    else if (meta.type === 'numeric'){ 
-        input = document.createElement('input'); 
-        input.type='number'; 
-        input.step='any'; 
-        input.value = value ?? ''; 
-    }
-    else if (meta.type === 'date'){ 
-        input = document.createElement('input'); 
-        input.type='date'; 
-        input.value = value ?? ''; 
-    }
-    else { 
-        input = document.createElement('input'); 
-        input.type='text'; 
-        input.value = value ?? ''; 
-    }
-    input.id = `f_${col}`;
-    if (meta.readonly) input.disabled = true;
-    wrap.appendChild(labelWrap);
-    wrap.appendChild(input);
-    form.appendChild(wrap);
-  }
-}
-
-async function populateFkOptions(selectEl, currentValue=null, forceReload=false){
+// connect
+$("#btn-connect").addEventListener("click", async ()=>{
+  const url = $("#sb-url").value.trim();
+  const key = $("#sb-key").value.trim();
   try{
-    const ref = JSON.parse(selectEl.dataset.fk);
-    if (!ref || !ref.table) return;
-    // Wenn schon Optionen da sind und kein Reload gefordert ist, nicht doppelt laden
-    if (selectEl.options.length>1 && !forceReload) { selectEl.value = currentValue ?? ''; return; }
-    selectEl.disabled = true;
-    const { data, error } = await client.from(ref.table)
-      .select(`${ref.value}, ${ref.label}`).order(ref.label, { ascending: true }).limit(500);
-    if (error) throw error;
-    // Reset außer (NULL)
-    [...selectEl.options].slice(1).forEach(o=>o.remove());
-    data.forEach(row=>{
-      const o=document.createElement('option');
-      o.value=row[ref.value];
-      o.textContent=`${row[ref.label]} (#${row[ref.value]})`;
-      selectEl.appendChild(o);
-    });
-    selectEl.value = currentValue ?? '';
-  }catch(e){
-    console.error(e);
-    toast(`FK-Optionen nicht ladbar: ${e.message}`, true);
-  }finally{
-    selectEl.disabled = false;
-  }
-}
-
-function parseSearch(q){
-  // einfache Syntax: "name: Finte" oder "id=12"
-  const parts = q.split(/\s+/).filter(Boolean);
-  const filters = [];
-  for (const p of parts){
-    const m = p.match(/^([^:=<>!]+)\s*([:=<>!]{1,2})\s*(.+)$/);
-    if (m){ filters.push({col:m[1], op:m[2], val:m[3]}); }
-  }
-  return filters;
-}
-
-async function loadRows(resetPage=false){
-  if (resetPage) page = 0;
-  const table = currentTable;
-  const def = SCHEMA[table];
-  const from = page*pageSize;
-  const to = from + pageSize - 1;
-  let query = client.from(table).select('*', { count: 'exact' }).range(from, to);
-  // einfache Default-Sortierung
-  if (def.pk && typeof def.pk === 'string') query = query.order(def.pk, { ascending:false });
-  
-  // Filter aus Kontext anwenden
-  if (context && context.fromTable && context.fromId) {
-    const fkCol = `${context.fromTable}_id`;
-    if (def.columns[fkCol]) {
-        query = query.eq(fkCol, context.fromId);
+    const { createClient } = supabase; // UMD global
+    client = createClient(url, key);
+    // simple ping: list tables by selecting from an existing one (sonderfertigkeit may be empty — we just call from('katalog') with limit 1)
+    const { error } = await client.from("katalog").select("id").limit(1);
+    if (error && !error.message.includes("relation") ) {
+      throw error;
     }
+    $("#conn-status").textContent = "verbunden";
+    $("#conn-status").style.background = "var(--ok)";
+    log("Verbindung erfolgreich.");
+    setStepper(1);
+  }catch(e){
+    log("Verbindung fehlgeschlagen: "+e.message, "err");
   }
-  
-  // Suche
-  const q = $('#search-input').value.trim();
-  if (q){
-    const fs = parseSearch(q);
-    fs.forEach(f=>{
-      const opMap = { ':':'ilike', '=':'eq', '==':'eq', '!=':'neq', '>':'gt', '>=':'gte', '<':'lt', '<=':'lte' };
-      const sop = opMap[f.op] || 'ilike';
-      let val = f.val;
-      if (sop==='ilike') val = `%${val}%`;
-      query = query.filter(f.col, sop, val);
-    });
-  }
-  const { data, error, count } = await query;
-  if (error){ showError(error); return; }
-  renderRowsTable(data, def);
-  $rowsCount.textContent = `${count ?? '?'} Datensätze`;
-  $pageInfo.textContent = `Seite ${page+1}`;
-}
+});
 
-function renderRowsTable(rows, def){
-  const cols = Object.keys(def.columns);
-  $rowsTable.innerHTML = '';
-  const thead = document.createElement('thead');
-  const trh = document.createElement('tr');
-  cols.forEach(c=>{ const th=document.createElement('th'); th.textContent=c; trh.appendChild(th); });
-  const acth = document.createElement('th'); acth.textContent='Aktionen'; trh.appendChild(acth);
-  thead.appendChild(trh); $rowsTable.appendChild(thead);
-  const tbody = document.createElement('tbody');
-  rows.forEach((row)=>{
-    const tr = document.createElement('tr');
-    cols.forEach(c=>{
-      const td=document.createElement('td');
-      td.textContent = fmt(row[c]);
-      tr.appendChild(td);
-    });
-    const act = document.createElement('td');
-    act.className = 'action-cell';
-    const b1 = document.createElement('button'); 
-    b1.className='btn btn-secondary btn-icon'; 
-    b1.textContent='✏️';
-    b1.title = 'Bearbeiten';
-    b1.onclick = ()=> buildForm(currentTable, row);
-    const b2 = document.createElement('button'); 
-    b2.className='btn btn-danger btn-icon'; 
-    b2.textContent='🗑';
-    b2.title = 'Löschen';
-    b2.onclick = ()=> { 
-        if (confirm('Wirklich löschen?')) {
-            buildForm(currentTable, row); 
-            doDelete(); 
-        }
+/** ---------- Helpers ---------- **/
+async function upsertKatalog(typ, name, gruppe=null){
+  if (!name || !typ) throw new Error("Katalog: typ/name fehlen");
+  const { data, error } = await client
+    .from("katalog")
+    .upsert({ typ, name, gruppe }, { onConflict: "typ,name" })
+    .select("id").single();
+  if (error) throw error;
+  return data.id;
+}
+async function searchSFByName(q){
+  const { data, error } = await client.from("sonderfertigkeit").select("id,name").ilike("name", `%${q}%`).limit(10);
+  if (error) throw error;
+  return data||[];
+}
+async function getStufen(sf_id){
+  const { data, error } = await client.from("sf_stufe").select("*").eq("sf_id", sf_id).order("reihenfolge",{ascending:true});
+  if (error) throw error;
+  return data||[];
+}
+function parseNum(v){ if(v===""||v===null||v===undefined) return null; const n=Number(v); return Number.isFinite(n)?n:null; }
+
+/** ---------- STEP 1: SF Basis ---------- **/
+$("#btn-save-sf").addEventListener("click", async ()=>{
+  try{
+    const payload = {
+      name: $("#sf-name").value.trim(),
+      kurzname: $("#sf-kurz").value.trim() || null,
+      kategorie: $("#sf-kategorie").value,
+      status: $("#sf-status").value,
+      regelwerk: $("#sf-regelwerk").value.trim() || "DSA 4.1",
+      beschreibung_kurz: $("#sf-desc").value.trim() || null,
+      bemerkung: $("#sf-note").value.trim() || null,
+      einzigartig: $("#sf-einzigartig").value === "true",
+      gestuft: $("#sf-gestuft").value === "true"
     };
-    act.appendChild(b1); 
-    act.appendChild(b2);
-    tr.appendChild(act);
-    tbody.appendChild(tr);
-  });
-  $rowsTable.appendChild(tbody);
-}
-
-function readFormValues(table){
-  const def = SCHEMA[table];
-  const payload = {};
-  for (const [col, meta] of Object.entries(def.columns)){
-    const el = document.getElementById(`f_${col}`);
-    if (!el || meta.readonly) continue; // PK/readonly nie mitschicken
-    let v = el.value;
-    if (v === '') v = null;
-    if (meta.type === 'boolean') v = v === null ? null : (v === 'true');
-    if (meta.type === 'integer' && v !== null) v = parseInt(v,10);
-    if (meta.type === 'numeric' && v !== null) v = parseFloat(v);
-    if (meta.type === 'date' && v !== null) v = v; // Date-Strings bleiben Strings
-    payload[col] = v;
-  }
-  return payload;
-}
-
-async function doSave(){
-  const table = currentTable;
-  const def = SCHEMA[table];
-  const raw = readFormValues(table);
-  try{
-    $('#btn-save').disabled = true;
-    $('#op-status').textContent = 'Speichere…';
-    let res, error;
-    if (Array.isArray(def.pk)){
-      // Composite PK: Upsert mit allen PK-Feldern (hier keine Auto-ID)
-      ({ data: res, error } = await client.from(table).upsert(raw).select());
-    } else if (editingRow && def.pk){
-      // Update: PK nie updaten
-      const updatePayload = { ...raw };
-      delete updatePayload[def.pk];
-      ({ data: res, error } = await client.from(table)
-        .update(updatePayload)
-        .eq(def.pk, editingRow[def.pk])
-        .select());
-    } else {
-      // Insert: PK entfernen (damit Sequence greift) und NULL-Felder weglassen
-      const insertPayload = { ...raw };
-      if (typeof def.pk === 'string') delete insertPayload[def.pk];
-      for (const k of Object.keys(insertPayload)){
-        if (insertPayload[k] === null) delete insertPayload[k];
-      }
-      ({ data: res, error } = await client.from(table).insert(insertPayload).select());
-    }
+    if(!payload.name) throw new Error("Name ist Pflicht");
+    const { data, error } = await client.from("sonderfertigkeit").insert(payload).select("id,gestuft").single();
     if (error) throw error;
-    $('#op-status').innerHTML = `<span class="success">✅ Gespeichert</span>`;
-    await loadRows(true);
-    if (res && res.length) buildForm(table, res[0]);
+    currentSfId = data.id; currentGestuft = data.gestuft;
+    $("#sf-created").textContent = "ID: "+currentSfId;
+    log(`SF angelegt (id=${currentSfId})`,"ok");
+    // prepare next steps
+    stufen = await getStufen(currentSfId);
+    renderKostenForm();
+    renderQuelleForm();
+    renderStufeUI();
+    renderStufeSelects();
   }catch(e){
-    $('#op-status').innerHTML = `<span class="error">❌ ${e.message}</span>`;
-  }finally{
-    $('#btn-save').disabled = false;
+    log("Fehler beim Anlegen: "+e.message,"err");
   }
-}
+});
+$("#btn-next-1").addEventListener("click", ()=> setStepper(2));
 
-async function doDelete(){
-  const table = currentTable;
-  const def = SCHEMA[table];
-  if (!editingRow){ toast('Keine Zeile ausgewählt', true); return; }
-  // Confirm is now handled in the button click handler
+/** ---------- STEP 2: Stufen ---------- **/
+function renderStufeUI(){
+  $("#stufe-list").innerHTML = (stufen.length? stufen.map(s=>`<div class="pill">#${s.id} ${s.bezeichnung} (ord ${s.reihenfolge})</div>`).join(" ") : "<div class='hint'>Noch keine Stufen.</div>");
+}
+$("#btn-add-stufe").addEventListener("click", async ()=>{
   try{
-    $('#btn-delete').disabled = true;
-    $('#op-status').textContent = 'Lösche…';
-    let q = client.from(table).delete();
-    if (Array.isArray(def.pk)){
-      def.pk.forEach(pk => { q = q.eq(pk, editingRow[pk]); });
-    } else {
-      q = q.eq(def.pk, editingRow[def.pk]);
-    }
-    const { error } = await q;
+    if(!currentSfId) throw new Error("Zuerst SF anlegen.");
+    const bezeichnung = $("#stufe-bez").value.trim();
+    const reihenfolge = parseInt($("#stufe-ord").value||"1",10);
+    if(!bezeichnung) throw new Error("Bezeichnung fehlt.");
+    const { data, error } = await client.from("sf_stufe").insert({ sf_id: currentSfId, bezeichnung, reihenfolge }).select("*").single();
     if (error) throw error;
-    $('#op-status').innerHTML = `<span class="success">🗑 gelöscht</span>`;
-    editingRow = null;
-    buildForm(table, null);
-    await loadRows(true);
-    // Kontext zurücksetzen, da das Elternelement gelöscht wurde
-    if (context && context.fromTable === table) {
-        context = null;
-    }
-  }catch(e){
-    $('#op-status').innerHTML = `<span class="error">❌ ${e.message}</span>`;
-  }finally{
-    $('#btn-delete').disabled = false;
-  }
-}
+    stufen.push(data);
+    renderStufeUI();
+    renderStufeSelects();
+    renderKostenForm();
+    renderQuelleForm();
+    log(`Stufe gespeichert: ${bezeichnung}`,"ok");
+    $("#stufe-bez").value=""; $("#stufe-ord").value="1";
+  }catch(e){ log("Fehler Stufe: "+e.message,"err"); }
+});
+$("#btn-next-2").addEventListener("click", ()=> setStepper(3));
 
-function toast(msg, isErr=false){
-  $status.textContent = msg;
-  $status.className = isErr ? 'status-value error' : 'status-value success';
-  setTimeout(()=>{ 
-      $status.textContent='Bereit'; 
-      $status.className='status-value'; 
-  }, 3000);
+/** ---------- STEP 3: Kosten ---------- **/
+function kostenRows(){
+  // general row + one per stufe
+  const rows = [{label:"(allgemein)", stufe_id:null}];
+  stufen.forEach(s=> rows.push({label:`Stufe ${s.bezeichnung}`, stufe_id:s.id}));
+  return rows;
 }
-
-function showError(err){ 
-    console.error(err); 
-    toast(err.message || String(err), true); 
-}
-
-// ==== Events ====
-document.addEventListener('DOMContentLoaded', ()=>{
-  initSupabase();
-  buildTableTree();
-  buildForm(currentTable, null);
-  loadRows(true);
-  
-  $('#btn-connect').onclick = ()=>{ 
-      initSupabase(); 
-      loadRows(true); 
-  };
-  $('#btn-load').onclick = ()=> loadRows(true);
-  $('#btn-new').onclick = ()=> buildForm(currentTable, null);
-  $('#btn-refresh').onclick = ()=> loadRows(false);
-  $('#btn-search').onclick = ()=> loadRows(true);
-  $('#prev-page').onclick = ()=> { 
-      if (page>0){ 
-          page--; 
-          loadRows(false);
-      }
-  };
-  $('#next-page').onclick = ()=> { 
-      page++; 
-      loadRows(false); 
-  };
-  $('#btn-save').onclick = (e)=>{ 
-      e.preventDefault(); 
-      doSave(); 
-  };
-  $('#btn-delete').onclick = (e)=>{ 
-      e.preventDefault(); 
-      // Confirmation moved here
-      if (!editingRow) {
-          toast('Keine Zeile ausgewählt', true);
-          return;
-      }
-      if (confirm('Wirklich löschen?')) {
-          doDelete(); 
-      }
-  };
-  $('#btn-clear').onclick = (e)=>{ 
-      e.preventDefault(); 
-      buildForm(currentTable, null); 
-  };
-  // Strg+K → Fokus Suche
-  document.addEventListener('keydown', (ev)=>{
-    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase()==='k'){
-      ev.preventDefault(); 
-      $('#search-input').focus();
-    }
+function renderKostenForm(){
+  const host = $("#kosten-form");
+  host.innerHTML = "";
+  kostenRows().forEach(r=>{
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+      <div class="hint small">Kosten für ${r.label}</div>
+      <label>AP (fix)</label>
+      <input data-k-ap type="number" />
+      <label>AP-Formel (statt fix)</label>
+      <input data-k-formel type="text" placeholder="z.B. 10 AP je betroffene Talentgruppe" />
+      <label>Bemerkung</label>
+      <input data-k-note type="text" />
+    `;
+    div.dataset.stufe = r.stufe_id || "";
+    host.appendChild(div);
   });
+}
+$("#btn-save-kosten").addEventListener("click", async ()=>{
+  try{
+    const cards = $$("#kosten-form .card");
+    for(const c of cards){
+      const ap = parseNum(c.querySelector("[data-k-ap]").value);
+      const formel = c.querySelector("[data-k-formel]").value.trim() || null;
+      const note = c.querySelector("[data-k-note]").value.trim() || null;
+      if(ap===null && !formel) continue; // skip empty row
+      const row = { sf_id: currentSfId, stufe_id: c.dataset.stufe || null, ap_betrag: ap, ap_formel: formel, bemerkung: note };
+      const { error } = await client.from("sf_kosten").insert(row);
+      if(error) throw error;
+    }
+    log("Kosten gespeichert.","ok");
+  }catch(e){ log("Fehler Kosten: "+e.message,"err"); }
+});
+$("#btn-next-3").addEventListener("click", ()=> setStepper(4));
+
+/** ---------- STEP 4: Quellen ---------- **/
+function renderQuelleForm(){
+  const host = $("#quelle-form");
+  host.innerHTML = "";
+  const rows = [{label:"(allgemein)", stufe_id:null}].concat(stufen.map(s=>({label:`Stufe ${s.bezeichnung}`, stufe_id:s.id})));
+  rows.forEach(r=>{
+    const div = document.createElement("div");
+    div.className="card";
+    div.dataset.stufe = r.stufe_id || "";
+    div.innerHTML = `
+      <div class="hint small">Quelle für ${r.label}</div>
+      <label>Werk-Code *</label><input data-q-code type="text" placeholder="z.B. WdS" />
+      <label>Werk-Titel</label><input data-q-titel type="text" />
+      <label>Auflage</label><input data-q-aufl type="text" />
+      <label>Seite</label><input data-q-seite type="text" placeholder="S. 123" />
+      <label>Errata</label><input data-q-err type="text" />
+    `;
+    host.appendChild(div);
+  });
+}
+$("#btn-save-quellen").addEventListener("click", async ()=>{
+  try{
+    const cards = $$("#quelle-form .card");
+    for(const c of cards){
+      const code = c.querySelector("[data-q-code]").value.trim();
+      if(!code) continue;
+      const row = {
+        sf_id: currentSfId,
+        stufe_id: c.dataset.stufe || null,
+        werk_code: code,
+        werk_titel: c.querySelector("[data-q-titel]").value.trim() || null,
+        auflage: c.querySelector("[data-q-aufl]").value.trim() || null,
+        seite: c.querySelector("[data-q-seite]").value.trim() || null,
+        errata: c.querySelector("[data-q-err]").value.trim() || null
+      };
+      const { error } = await client.from("sf_quelle").insert(row);
+      if(error) throw error;
+    }
+    log("Quellen gespeichert.","ok");
+  }catch(e){ log("Fehler Quellen: "+e.message,"err"); }
+});
+$("#btn-next-4").addEventListener("click", ()=> {
+  refreshPreGroups();
+  setStepper(5);
+});
+
+/** ---------- STEP 5: Voraussetzungen ---------- **/
+async function refreshPreGroups(){
+  if(!currentSfId) return;
+  // groups
+  const { data: groups } = await client.from("sf_pre_gruppe").select("id,logik,titel").eq("sf_id", currentSfId).order("id");
+  const list = $("#pre-group-list");
+  list.innerHTML = (groups?.length? "":"<div class='hint'>Noch keine Gruppen.</div>");
+  const sel = $("#pre-group-select"); sel.innerHTML="";
+  (groups||[]).forEach(g=>{
+    const card = document.createElement("div"); card.className="card";
+    card.innerHTML = `<b>Gruppe #${g.id}</b> – <span class="pill">${g.logik}</span> ${g.titel?("· "+g.titel):""}
+    <div class="hr"></div>
+    <div id="grp-${g.id}" class="small hint">lade Items…</div>`;
+    list.appendChild(card);
+    const opt = document.createElement("option"); opt.value=g.id; opt.textContent=`#${g.id} (${g.logik}) ${g.titel||""}`; sel.appendChild(opt);
+    // load items
+    loadGroupItems(g.id);
+  });
+}
+async function loadGroupItems(gruppe_id){
+  const { data: items } = await client.from("sf_pre_item").select("*").eq("gruppe_id", gruppe_id).order("id");
+  const host = document.getElementById("grp-"+gruppe_id);
+  if(!items || !items.length){ host.textContent = "— keine Items —"; return; }
+  host.innerHTML = items.map(i=>{
+    if(i.typ==="attr") return `• <kbd>${i.attr_code} ${i.attr_op} ${i.attr_wert}</kbd>`;
+    if(i.typ==="katalog") return `• Katalog #${i.katalog_id}${i.min_wert?` (≥ ${i.min_wert} ${i.min_wert_label||""})`:""}`;
+    if(i.typ==="sf") return `• SF #${i.braucht_sf_id}${i.braucht_stufe?` [Stufe ${i.braucht_stufe}]`:""}`;
+    return `• ${i.frei_text}`;
+  }).join("<br>");
+}
+$("#btn-add-pre-grp").addEventListener("click", async ()=>{
+  try{
+    const logik = $("#pre-logik").value; const titel = $("#pre-title").value.trim()||null;
+    const { data, error } = await client.from("sf_pre_gruppe").insert({ sf_id: currentSfId, logik, titel }).select("id").single();
+    if(error) throw error;
+    log(`Voraussetzungsgruppe #${data.id} angelegt`,"ok");
+    $("#pre-title").value="";
+    await refreshPreGroups();
+  }catch(e){ log("Fehler Gruppe: "+e.message,"err"); }
+});
+$("#btn-add-pre-item").addEventListener("click", async ()=>{
+  try{
+    const gruppe_id = parseInt($("#pre-group-select").value||"0",10);
+    if(!gruppe_id) throw new Error("Bitte Gruppe wählen.");
+    const typ = $("#pre-typ").value;
+    let row = { gruppe_id, typ };
+    if(typ==="attr"){
+      row.attr_code = $("#pre-attr-code").value;
+      row.attr_op = $("#pre-attr-op").value;
+      row.attr_wert = parseInt($("#pre-attr-val").value||"0",10);
+      if(!row.attr_wert) throw new Error("Attributwert fehlt.");
+    }else if(typ==="katalog"){
+      const typK = $("#pre-katalog-typ").value;
+      const nameK = $("#pre-katalog-name").value.trim();
+      const id = await upsertKatalog(typK, nameK);
+      row.katalog_id = id;
+      row.min_wert = parseNum($("#pre-katalog-min").value);
+      row.min_wert_label = $("#pre-katalog-label").value.trim()||null;
+    }else if(typ==="sf"){
+      const q = $("#pre-sf-search").value.trim();
+      if(!q) throw new Error("SF-Name eingeben.");
+      const list = await searchSFByName(q);
+      if(!list.length) throw new Error("Keine passende SF gefunden (lege erst die Ziel-SF an).");
+      row.braucht_sf_id = list[0].id; // nimm erstes Ergebnis (einfach)
+      row.braucht_stufe = $("#pre-sf-stufe").value.trim()||null;
+    }else if(typ==="text"){
+      row.frei_text = $("#pre-freetext").value.trim();
+      if(!row.frei_text) throw new Error("Freitext ist leer.");
+    }
+    const { error } = await client.from("sf_pre_item").insert(row);
+    if(error) throw error;
+    log("Voraussetzungs-Item gespeichert.","ok");
+    await loadGroupItems(gruppe_id);
+  }catch(e){ log("Fehler Item: "+e.message,"err"); }
+});
+$("#btn-next-5").addEventListener("click", ()=> setStepper(6));
+
+/** ---------- STEP 6: Geltung ---------- **/
+async function refreshGeltung(){
+  const { data } = await client.from("sf_geltung").select("id,katalog_id,kommentar").eq("sf_id", currentSfId).order("id");
+  $("#geltung-list").innerHTML = (data?.length? data.map(g=>`• #${g.id} Katalog #${g.katalog_id}${g.kommentar?` (${g.kommentar})`:""}`).join("<br>") : "<div class='hint'>— keine Einträge —</div>");
+}
+$("#btn-add-geltung").addEventListener("click", async ()=>{
+  try{
+    const typ = $("#gelt-typ").value, name = $("#gelt-name").value.trim();
+    const kommentar = $("#gelt-kommentar").value.trim()||null;
+    const katalog_id = await upsertKatalog(typ,name);
+    const { error } = await client.from("sf_geltung").insert({ sf_id: currentSfId, katalog_id, kommentar });
+    if(error) throw error;
+    log("Geltung gespeichert.","ok");
+    $("#gelt-name").value=""; $("#gelt-kommentar").value="";
+    await refreshGeltung();
+  }catch(e){ log("Fehler Geltung: "+e.message,"err"); }
+});
+$("#btn-next-6").addEventListener("click", ()=> setStepper(7));
+
+/** ---------- STEP 7: Nutzung + Ressourcen ---------- **/
+function renderStufeSelects(){
+  const selects = ["nut-stufe","wtext-stufe","eff-stufe"];
+  selects.forEach(id=>{
+    const el = $("#"+id);
+    el.innerHTML = `<option value="">—</option>` + (stufen||[]).map(s=>`<option value="${s.id}">${s.bezeichnung}</option>`).join("");
+  });
+  // pre-groups select refreshed elsewhere
+}
+$("#btn-save-nutzung").addEventListener("click", async ()=>{
+  try{
+    const row = {
+      sf_id: currentSfId,
+      stufe_id: $("#nut-stufe").value || null,
+      aktivierung: $("#nut-aktiv").value,
+      aktionen_kosten: parseNum($("#nut-aktionen").value),
+      dauer_typ: $("#nut-dauertyp").value.trim()||null,
+      dauer_wert: $("#nut-dauerwert").value.trim()||null,
+      bedingung: $("#nut-beding").value.trim()||null
+    };
+    const { data, error } = await client.from("sf_nutzung").insert(row).select("id").single();
+    if(error) throw error;
+    $("#nut-id").textContent = "nutzung_id: "+data.id;
+    $("#ress-list").innerHTML = "<div class='hint'>— noch keine Ressourcen —</div>";
+    log("Nutzung gespeichert (#"+data.id+").","ok");
+  }catch(e){ log("Fehler Nutzung: "+e.message,"err"); }
+});
+$("#btn-add-ress").addEventListener("click", async ()=>{
+  try{
+    const nid = ($("#nut-id").textContent.split(":")[1]||"").trim();
+    if(!nid || nid==="—") throw new Error("Erst Nutzung speichern.");
+    const betrag = parseNum($("#res-betrag").value);
+    const formel = $("#res-formel").value.trim()||null;
+    if(betrag===null && !formel) throw new Error("Betrag oder Formel angeben.");
+    const row = {
+      nutzung_id: parseInt(nid,10),
+      typ: $("#res-typ").value,
+      betrag,
+      formel,
+      bemerkung: $("#res-bem").value.trim()||null
+    };
+    const { error } = await client.from("sf_nutzung_ressource").insert(row);
+    if(error) throw error;
+    log("Ressource gespeichert.","ok");
+    const { data } = await client.from("sf_nutzung_ressource").select("*").eq("nutzung_id", parseInt(nid,10));
+    $("#ress-list").innerHTML = data.map(r=>`• ${r.typ} ${r.betrag??""} ${r.formel??""}`).join("<br>");
+    $("#res-betrag").value=""; $("#res-formel").value=""; $("#res-bem").value="";
+  }catch(e){ log("Fehler Ressource: "+e.message,"err"); }
+});
+$("#btn-next-7").addEventListener("click", ()=> setStepper(8));
+
+/** ---------- STEP 8: Wirkungen + Effekte ---------- **/
+$("#btn-add-wtext").addEventListener("click", async ()=>{
+  try{
+    const row = {
+      sf_id: currentSfId,
+      stufe_id: $("#wtext-stufe").value || null,
+      text: $("#wtext-text").value.trim()
+    };
+    if(!row.text) throw new Error("Text fehlt.");
+    const { error } = await client.from("sf_wirkung_text").insert(row);
+    if(error) throw error;
+    log("Wirkungstext gespeichert.","ok");
+    $("#wtext-text").value="";
+  }catch(e){ log("Fehler Wirkungstext: "+e.message,"err"); }
+});
+$("#btn-add-eff").addEventListener("click", async ()=>{
+  try{
+    let ziel_katalog = null;
+    const typ = $("#eff-kat-typ").value; const name = $("#eff-kat-name").value.trim();
+    if(typ && name){ ziel_katalog = await upsertKatalog(typ, name); }
+    const row = {
+      sf_id: currentSfId,
+      stufe_id: $("#eff-stufe").value || null,
+      ziel_typ: $("#eff-zieltyp").value.trim(),
+      ziel_katalog,
+      operator: $("#eff-op").value,
+      wert_num: parseNum($("#eff-num").value),
+      wert_wuerfel: $("#eff-wurf").value.trim()||null,
+      bedingung: $("#eff-bed").value.trim()||null,
+      stapelregel: $("#eff-stack").value.trim()||null
+    };
+    if(!row.ziel_typ) throw new Error("Ziel-Typ fehlt.");
+    const { error } = await client.from("sf_effect").insert(row);
+    if(error) throw error;
+    log("Effekt gespeichert.","ok");
+    ["eff-kat-name","eff-num","eff-wurf","eff-bed","eff-stack"].forEach(id=>$("#"+id).value="");
+  }catch(e){ log("Fehler Effekt: "+e.message,"err"); }
+});
+$("#btn-next-8").addEventListener("click", ()=> setStepper(9));
+
+/** ---------- STEP 9: Konflikte ---------- **/
+$("#btn-add-konflikt").addEventListener("click", async ()=>{
+  try{
+    const q = $("#konf-suche").value.trim();
+    if(!q) throw new Error("Name eingeben.");
+    const list = await searchSFByName(q);
+    if(!list.length) throw new Error("Keine SF gefunden.");
+    const other = list[0];
+    const { error } = await client.from("sf_konflikt").insert({ sf_id: currentSfId, ausschluss_sf_id: other.id, bemerkung: $("#konf-bem").value.trim()||null });
+    if(error) throw error;
+    log(`Konflikt gespeichert (gegen ${other.name}).`,"ok");
+    $("#konf-bem").value=""; $("#konf-suche").value="";
+    const { data } = await client.from("sf_konflikt").select("id,ausschluss_sf_id").eq("sf_id", currentSfId);
+    $("#konf-list").innerHTML = data.map(k=>`• #${k.id} gegen SF #${k.ausschluss_sf_id}`).join("<br>");
+  }catch(e){ log("Fehler Konflikt: "+e.message,"err"); }
+});
+$("#btn-next-9").addEventListener("click", ()=> { refreshChecklist(); setStepper(10); });
+
+/** ---------- STEP 10: Review ---------- **/
+async function refreshChecklist(){
+  try{
+    const { data, error } = await client.from("sf_checkliste").select("*").eq("id", currentSfId).single();
+    if(error) throw error;
+    const ok = (b)=> `<span class="pill" style="background:${b?'var(--ok)':'#2d355f'};color:${b?'#06200f':'var(--muted)'}">${b?'OK':'fehlt'}</span>`;
+    $("#checkliste").innerHTML = `
+      <div><b>${data.name}</b> (id ${data.id})</div>
+      <div class="hr"></div>
+      <div class="grid">
+        <div>Kosten: ${ok(data.hat_kosten)}</div>
+        <div>Stufen (falls nötig): ${ok(data.hat_stufen_falls_noetig)}</div>
+        <div>Quellen: ${ok(data.hat_quellen)}</div>
+        <div>Wirkungstext: ${ok(data.hat_wirkungstext)}</div>
+        <div>Voraussetzungen konsistent: ${ok(data.voraussetzungen_ok)}</div>
+      </div>
+    `;
+    log("Checkliste geladen.","ok");
+  }catch(e){ log("Fehler Checkliste: "+e.message,"err"); }
+}
+$("#btn-refresh-check").addEventListener("click", refreshChecklist);
+$("#btn-del-sf").addEventListener("click", async ()=>{
+  try{
+    if(!currentSfId) return;
+    if(!confirm("Diese SF und alle abhängigen Datensätze löschen?")) return;
+    const { error } = await client.from("sonderfertigkeit").delete().eq("id", currentSfId);
+    if(error) throw error;
+    log("SF gelöscht (Rollback).","warn");
+    location.reload();
+  }catch(e){ log("Fehler Löschen: "+e.message,"err"); }
 });
 </script>
 </body>

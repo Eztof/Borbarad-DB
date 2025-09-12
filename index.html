@@ -90,7 +90,7 @@
 
     /* Sidebar */
     aside {
-      width: 300px;
+      width: 320px;
       background-color: var(--bg-panel);
       border-right: 1px solid var(--border);
       padding: 20px;
@@ -259,15 +259,93 @@
       color: white;
     }
 
-    .quick-access-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+    /* Tree View */
+    .tree-view {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.95rem;
     }
 
-    .quick-access-grid .btn {
-      font-size: 0.85rem;
-      padding: 8px 12px;
+    .tree-item {
+      margin: 0;
+      padding: 0;
+    }
+
+    .tree-toggle {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+
+    .tree-toggle:hover {
+      background-color: #4a5568;
+    }
+
+    .tree-toggle.expanded {
+      background-color: #2d3748;
+    }
+
+    .tree-toggle::before {
+      content: '▶';
+      margin-right: 8px;
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+    }
+
+    .tree-toggle.expanded::before {
+      transform: rotate(90deg);
+    }
+
+    .tree-leaf {
+      padding-left: 24px;
+    }
+
+    .tree-leaf .tree-toggle {
+      padding-left: 24px;
+    }
+
+    .tree-leaf .tree-toggle::before {
+      content: '•';
+      margin-right: 12px;
+      transform: none !important;
+      color: var(--accent-primary);
+    }
+
+    .tree-link {
+      display: block;
+      padding: 6px 10px 6px 34px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .tree-link:hover {
+      background-color: #4a5568;
+      color: var(--text-primary);
+    }
+
+    .tree-link.active {
+      background-color: var(--accent-primary);
+      color: white;
+      font-weight: 500;
+    }
+
+    .tree-group {
+      list-style: none;
+      padding-left: 16px;
+      margin: 0;
+      display: none;
+    }
+
+    .tree-group.expanded {
+      display: block;
     }
 
     /* Main Content */
@@ -515,29 +593,12 @@
     <div class="card">
       <h3>📂 Daten</h3>
       <div class="stack">
-        <div class="form-field">
-          <label for="table-select">Tabelle</label>
-          <select id="table-select"></select>
-        </div>
+        <ul id="table-tree" class="tree-view"></ul>
         <div class="btn-group">
-          <button id="btn-load" class="btn btn-secondary">Laden</button>
+          <button id="btn-load" class="btn btn-secondary">Aktualisieren</button>
           <button id="btn-new" class="btn btn-secondary">Neu anlegen</button>
         </div>
         <div class="help-text">Tipp: <kbd>Strg</kbd>+<kbd>K</kbd> für Suche in Datensätzen.</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>⚡ Schnellzugriff</h3>
-      <div class="quick-access-grid">
-        <button class="btn btn-secondary" data-jump="sonderfertigkeit">Sonderfertigkeit</button>
-        <button class="btn btn-secondary" data-jump="sf_stufe">Stufe</button>
-        <button class="btn btn-secondary" data-jump="sf_kosten">AP-Kosten</button>
-        <button class="btn btn-secondary" data-jump="sf_quelle">Quelle</button>
-        <button class="btn btn-secondary" data-jump="sf_modifikator">Modifikator</button>
-        <button class="btn btn-secondary" data-jump="sf_nutzung">Nutzung</button>
-        <button class="btn btn-secondary" data-jump="sf_pre_sf">Voraus. SF</button>
-        <button class="btn btn-secondary" data-jump="sf__talent">↔ SF↔Talent</button>
       </div>
     </div>
 
@@ -915,16 +976,79 @@ const SCHEMA = {
     }
   }
 };
+
+// ======== Struktur für die Baumansicht ========
+const TABLE_GROUPS = [
+  {
+    name: "Stammdaten",
+    icon: "📚",
+    tables: ["talent", "waffengruppe", "tradition", "vorteil", "nachteil", "quelle", "tag"]
+  },
+  {
+    name: "Sonderfertigkeit",
+    icon: "⭐",
+    tables: ["sonderfertigkeit"],
+    children: [
+      {
+        name: "Verknüpfungen",
+        icon: "🔗",
+        tables: ["sf__tag", "sf__talent", "sf__waffengruppe", "sf__tradition"]
+      },
+      {
+        name: "Stufen/Kosten/Quelle",
+        icon: "📊",
+        tables: ["sf_stufe", "sf_kosten", "sf_quelle"]
+      },
+      {
+        name: "Voraussetzungen",
+        icon: "🔒",
+        tables: [
+          "sf_voraussetzung_text",
+          "sf_pre_attribut",
+          "sf_pre_talent",
+          "sf_pre_sf",
+          "sf_pre_vorteil",
+          "sf_pre_nachteil",
+          "sf_pre_kultur",
+          "sf_pre_profession",
+          "sf_pre_tradition",
+          "sf_pre_waffengruppe",
+          "sf_voraussetzungsgruppe",
+          "sf_voraussetzungsgruppe_item"
+        ]
+      },
+      {
+        name: "Nutzung/Wirkung",
+        icon: "⚡",
+        tables: [
+          "sf_nutzung",
+          "sf_nutzung_ressource",
+          "sf_wirkung_text",
+          "sf_modifikator"
+        ]
+      },
+      {
+        name: "Sonstiges",
+        icon: "🧩",
+        tables: ["sf_konflikt", "sf_version"]
+      }
+    ]
+  }
+];
+
 // ======= Laufzeit =======
 let client = null;
 let currentTable = 'sonderfertigkeit';
 let editingRow = null;
 let page = 0, pageSize = 25;
+let context = null; // { fromTable: 'sonderfertigkeit', fromId: 123 }
+
 const $ = (sel) => document.querySelector(sel);
 const $rowsTable = $('#rows-table');
 const $rowsCount = $('#rows-count');
 const $pageInfo = $('#page-info');
 const $status = $('#status');
+
 function initSupabase(){
   const url = $('#sb-url').value.trim();
   const key = $('#sb-key').value.trim();
@@ -932,28 +1056,161 @@ function initSupabase(){
   $status.textContent = 'Verbunden';
   $status.className = 'status-value'; // Reset class
 }
+
 function fmt(v){
   if (v === null || v === undefined) return '—';
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   return String(v);
 }
-function buildTableSelect(){
-  const sel = $('#table-select');
-  sel.innerHTML = '';
-  Object.entries(SCHEMA).forEach(([t,def])=>{
-    const opt = document.createElement('option');
-    opt.value = t; opt.textContent = `${def.label} (${t})`;
-    sel.appendChild(opt);
+
+function buildTableTree() {
+  const tree = $('#table-tree');
+  tree.innerHTML = '';
+
+  function createTreeItem(group, isChild = false) {
+    const li = document.createElement('li');
+    li.className = 'tree-item';
+
+    if (group.tables) {
+      // Gruppe mit Tabellen
+      const toggle = document.createElement('div');
+      toggle.className = 'tree-toggle';
+      toggle.innerHTML = `<span>${group.icon || '📁'} ${group.name}</span>`;
+      
+      const groupList = document.createElement('ul');
+      groupList.className = 'tree-group';
+      
+      toggle.addEventListener('click', () => {
+        const isExpanded = groupList.classList.contains('expanded');
+        groupList.classList.toggle('expanded', !isExpanded);
+        toggle.classList.toggle('expanded', !isExpanded);
+      });
+
+      li.appendChild(toggle);
+      
+      group.tables.forEach(tableName => {
+        const tableDef = SCHEMA[tableName];
+        if (!tableDef) return;
+        const tableLi = document.createElement('li');
+        tableLi.className = 'tree-leaf';
+        const link = document.createElement('a');
+        link.href = '#';
+        link.className = 'tree-link';
+        if (tableName === currentTable) link.classList.add('active');
+        link.dataset.table = tableName;
+        link.innerHTML = `📄 ${tableDef.label || tableName}`;
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchTable(tableName);
+        });
+        tableLi.appendChild(link);
+        groupList.appendChild(tableLi);
+      });
+
+      li.appendChild(groupList);
+    } else if (group.children) {
+      // Hauptgruppe mit Kindern
+      const toggle = document.createElement('div');
+      toggle.className = 'tree-toggle';
+      toggle.innerHTML = `<span>${group.icon || '📁'} ${group.name}</span>`;
+      
+      const groupList = document.createElement('ul');
+      groupList.className = 'tree-group';
+      
+      toggle.addEventListener('click', () => {
+        const isExpanded = groupList.classList.contains('expanded');
+        groupList.classList.toggle('expanded', !isExpanded);
+        toggle.classList.toggle('expanded', !isExpanded);
+      });
+
+      li.appendChild(toggle);
+      
+      // Haupttabelle
+      const mainTable = group.tables?.[0];
+      if (mainTable) {
+        const mainTableDef = SCHEMA[mainTable];
+        const mainTableLi = document.createElement('li');
+        mainTableLi.className = 'tree-leaf';
+        const mainLink = document.createElement('a');
+        mainLink.href = '#';
+        mainLink.className = 'tree-link';
+        if (mainTable === currentTable) mainLink.classList.add('active');
+        mainLink.dataset.table = mainTable;
+        mainLink.innerHTML = `⭐ ${mainTableDef.label || mainTable}`;
+        mainLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchTable(mainTable);
+        });
+        mainTableLi.appendChild(mainLink);
+        groupList.appendChild(mainTableLi);
+      }
+
+      // Kindgruppen
+      group.children.forEach(childGroup => {
+        const childLi = createTreeItem(childGroup, true);
+        groupList.appendChild(childLi);
+        
+        // Tabellen in Kindgruppen verlinken auch zur Haupttabelle
+        childLi.querySelectorAll('.tree-link').forEach(link => {
+            const tableName = link.dataset.table;
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Setze Kontext
+                if (editingRow && editingRow.id) {
+                    context = { fromTable: mainTable, fromId: editingRow.id, fromLabel: editingRow.name || editingRow.bezeichnung };
+                }
+                switchTable(tableName);
+            });
+        });
+      });
+
+      li.appendChild(groupList);
+    }
+    return li;
+  }
+
+  TABLE_GROUPS.forEach(group => {
+    const item = createTreeItem(group);
+    tree.appendChild(item);
   });
-  sel.value = currentTable;
 }
+
+function switchTable(tableName) {
+  currentTable = tableName;
+  page = 0;
+  buildTableTree(); // Aktualisiere aktiven Link
+  buildForm(tableName, null);
+  loadRows(true);
+}
+
 function buildForm(table, row=null){
   const def = SCHEMA[table];
   const form = $('#editor');
   form.innerHTML = '';
-  $('#form-mode').textContent = row ? `Bearbeiten (#${row[def.pk] ?? '–'})` : 'Neu';
+  
+  let modeText = 'Neu';
+  if (row) {
+    modeText = `Bearbeiten (#${row[def.pk] ?? '–'})`;
+  } else if (context && context.fromTable && context.fromId) {
+    modeText = `Neu für ${context.fromLabel} (#${context.fromId})`;
+  }
+  $('#form-mode').textContent = modeText;
+  
   editingRow = row;
+  
   for (const [col, meta] of Object.entries(def.columns)){
+    // Verstecke das FK-Feld zur Haupttabelle, wenn ein Kontext vorliegt
+    if (context && context.fromTable && col === `${context.fromTable}_id` && meta.type === 'fk') {
+        if (!row) { // Nur beim Neuanlegen verstecken und vorbelegen
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.id = `f_${col}`;
+            hiddenInput.value = context.fromId;
+            form.appendChild(hiddenInput);
+        }
+        continue; // Feld nicht im Formular anzeigen
+    }
+    
     const wrap = document.createElement('div'); wrap.className = 'form-field';
     
     const labelWrap = document.createElement('div'); labelWrap.className = 'form-field-header';
@@ -1046,6 +1303,7 @@ function buildForm(table, row=null){
     form.appendChild(wrap);
   }
 }
+
 async function populateFkOptions(selectEl, currentValue=null, forceReload=false){
   try{
     const ref = JSON.parse(selectEl.dataset.fk);
@@ -1072,6 +1330,7 @@ async function populateFkOptions(selectEl, currentValue=null, forceReload=false)
     selectEl.disabled = false;
   }
 }
+
 function parseSearch(q){
   // einfache Syntax: "name: Finte" oder "id=12"
   const parts = q.split(/\s+/).filter(Boolean);
@@ -1082,6 +1341,7 @@ function parseSearch(q){
   }
   return filters;
 }
+
 async function loadRows(resetPage=false){
   if (resetPage) page = 0;
   const table = currentTable;
@@ -1091,6 +1351,15 @@ async function loadRows(resetPage=false){
   let query = client.from(table).select('*', { count: 'exact' }).range(from, to);
   // einfache Default-Sortierung
   if (def.pk && typeof def.pk === 'string') query = query.order(def.pk, { ascending:false });
+  
+  // Filter aus Kontext anwenden
+  if (context && context.fromTable && context.fromId) {
+    const fkCol = `${context.fromTable}_id`;
+    if (def.columns[fkCol]) {
+        query = query.eq(fkCol, context.fromId);
+    }
+  }
+  
   // Suche
   const q = $('#search-input').value.trim();
   if (q){
@@ -1109,6 +1378,7 @@ async function loadRows(resetPage=false){
   $rowsCount.textContent = `${count ?? '?'} Datensätze`;
   $pageInfo.textContent = `Seite ${page+1}`;
 }
+
 function renderRowsTable(rows, def){
   const cols = Object.keys(def.columns);
   $rowsTable.innerHTML = '';
@@ -1149,6 +1419,7 @@ function renderRowsTable(rows, def){
   });
   $rowsTable.appendChild(tbody);
 }
+
 function readFormValues(table){
   const def = SCHEMA[table];
   const payload = {};
@@ -1160,10 +1431,12 @@ function readFormValues(table){
     if (meta.type === 'boolean') v = v === null ? null : (v === 'true');
     if (meta.type === 'integer' && v !== null) v = parseInt(v,10);
     if (meta.type === 'numeric' && v !== null) v = parseFloat(v);
+    if (meta.type === 'date' && v !== null) v = v; // Date-Strings bleiben Strings
     payload[col] = v;
   }
   return payload;
 }
+
 async function doSave(){
   const table = currentTable;
   const def = SCHEMA[table];
@@ -1202,6 +1475,7 @@ async function doSave(){
     $('#btn-save').disabled = false;
   }
 }
+
 async function doDelete(){
   const table = currentTable;
   const def = SCHEMA[table];
@@ -1222,12 +1496,17 @@ async function doDelete(){
     editingRow = null;
     buildForm(table, null);
     await loadRows(true);
+    // Kontext zurücksetzen, da das Elternelement gelöscht wurde
+    if (context && context.fromTable === table) {
+        context = null;
+    }
   }catch(e){
     $('#op-status').innerHTML = `<span class="error">❌ ${e.message}</span>`;
   }finally{
     $('#btn-delete').disabled = false;
   }
 }
+
 function toast(msg, isErr=false){
   $status.textContent = msg;
   $status.className = isErr ? 'status-value error' : 'status-value success';
@@ -1236,25 +1515,21 @@ function toast(msg, isErr=false){
       $status.className='status-value'; 
   }, 3000);
 }
+
 function showError(err){ 
     console.error(err); 
     toast(err.message || String(err), true); 
 }
+
 // ==== Events ====
 document.addEventListener('DOMContentLoaded', ()=>{
   initSupabase();
-  buildTableSelect();
+  buildTableTree();
   buildForm(currentTable, null);
   loadRows(true);
   
   $('#btn-connect').onclick = ()=>{ 
       initSupabase(); 
-      loadRows(true); 
-  };
-  $('#table-select').onchange = (e)=>{ 
-      currentTable = e.target.value; 
-      page=0; 
-      buildForm(currentTable,null); 
       loadRows(true); 
   };
   $('#btn-load').onclick = ()=> loadRows(true);
@@ -1290,15 +1565,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       e.preventDefault(); 
       buildForm(currentTable, null); 
   };
-  // Schnellzugriff
-  document.querySelectorAll('[data-jump]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      currentTable = btn.dataset.jump;
-      $('#table-select').value = currentTable;
-      buildForm(currentTable,null);
-      loadRows(true);
-    });
-  });
   // Strg+K → Fokus Suche
   document.addEventListener('keydown', (ev)=>{
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase()==='k'){

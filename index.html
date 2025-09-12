@@ -667,7 +667,7 @@ function readFormValues(table){
   const payload = {};
   for (const [col, meta] of Object.entries(def.columns)){
     const el = document.getElementById(`f_${col}`);
-    if (!el) continue;
+    if (!el || meta.readonly) continue; // PK/readonly nie mitschicken
     let v = el.value;
     if (v === '') v = null;
     if (meta.type === 'boolean') v = v === null ? null : (v === 'true');
@@ -681,25 +681,37 @@ function readFormValues(table){
 async function doSave(){
   const table = currentTable;
   const def = SCHEMA[table];
-  const payload = readFormValues(table);
+  const raw = readFormValues(table);
 
   try{
     $('#btn-save').disabled = true;
     $('#op-status').textContent = 'Speichere…';
     let res, error;
 
-    // Composite PKs: Insert/Upsert über alle PK-Felder
     if (Array.isArray(def.pk)){
-      ({ data: res, error } = await client.from(table).upsert(payload).select());
+      // Composite PK: Upsert mit allen PK-Feldern (hier keine Auto-ID)
+      ({ data: res, error } = await client.from(table).upsert(raw).select());
     } else if (editingRow && def.pk){
-      ({ data: res, error } = await client.from(table).update(payload).eq(def.pk, editingRow[def.pk]).select());
+      // Update: PK nie updaten
+      const updatePayload = { ...raw };
+      delete updatePayload[def.pk];
+      ({ data: res, error } = await client.from(table)
+        .update(updatePayload)
+        .eq(def.pk, editingRow[def.pk])
+        .select());
     } else {
-      ({ data: res, error } = await client.from(table).insert(payload).select());
+      // Insert: PK entfernen (damit Sequence greift) und NULL-Felder weglassen
+      const insertPayload = { ...raw };
+      if (typeof def.pk === 'string') delete insertPayload[def.pk];
+      for (const k of Object.keys(insertPayload)){
+        if (insertPayload[k] === null) delete insertPayload[k];
+      }
+      ({ data: res, error } = await client.from(table).insert(insertPayload).select());
     }
+
     if (error) throw error;
     $('#op-status').innerHTML = `<span class="success">✅ Gespeichert</span>`;
     await loadRows(true);
-    // frisch geladene Zeile ins Formular
     if (res && res.length) buildForm(table, res[0]);
   }catch(e){
     $('#op-status').innerHTML = `<span class="error">❌ ${e.message}</span>`;

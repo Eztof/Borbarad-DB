@@ -1,387 +1,339 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Zauber Datafiller – spells_flat</title>
+  <title>Zauber Datafiller – spells_flat (schön)</title>
   <style>
-    :root { --bg:#0b0c10; --panel:#111318; --ink:#e5e7eb; --muted:#9ca3af; --acc:#7c3aed; --ok:#10b981; --warn:#f59e0b; --err:#ef4444; }
-    html,body { height:100%; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:linear-gradient(180deg,#0b0c10,#0f1120); color:var(--ink); }
-    .wrap { max-width:1200px; margin:0 auto; padding:24px; }
-    h1 { font-size:28px; margin:0 0 12px; }
-    p.lead { color:var(--muted); margin-top:0; }
-    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
-    .card { grid-column:1 / -1; background:var(--panel); border:1px solid #1f2330; border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-    fieldset { border:1px solid #222538; border-radius:12px; padding:12px; }
-    legend { color:#c4b5fd; padding:0 6px; }
-    label { display:block; font-size:12px; color:var(--muted); margin-top:8px; }
-    input[type="text"], input[type="number"], select, textarea { width:100%; box-sizing:border-box; background:#0e1018; color:var(--ink); border:1px solid #24283b; border-radius:10px; padding:10px 12px; outline:none; }
-    textarea { min-height:84px; }
-    .row { display:grid; grid-template-columns: repeat(12, 1fr); gap:10px; }
-    .col-3 { grid-column: span 3; }
-    .col-4 { grid-column: span 4; }
-    .col-6 { grid-column: span 6; }
-    .col-8 { grid-column: span 8; }
-    .col-12 { grid-column: span 12; }
-    .muted { color:var(--muted); font-size:12px; }
-    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-    button { background:var(--acc); color:white; border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:600; }
-    button.secondary { background:#1f2937; }
-    button.warn { background:var(--warn); color:black; }
-    button.ghost { background:transparent; border:1px solid #2a2e42; }
-    .pill { display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border:1px solid #2c3046; border-radius:999px; }
-    details { border:1px dashed #2c3046; border-radius:12px; padding:8px 10px; }
-    details > summary { cursor:pointer; color:#c4b5fd; font-weight:600; }
-    .ok { color:var(--ok); }
-    .err { color:var(--err); }
-    .out { width:100%; min-height:140px; white-space:pre; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    /* ===== Design System ===== */
+    :root{
+      --bg: #0b0d14; --panel:#0f1320; --elev:#151a2c; --line:#23283e;
+      --ink:#e8eaf3; --muted:#a6accd; --accent:#8b5cf6; --accent-2:#22d3ee; --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
+      --radius: 14px; --radius-lg: 20px; --shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+    html[data-theme="light"]{ --bg:#f7f7fb; --panel:#ffffff; --elev:#f9f9ff; --line:#e6e8f0; --ink:#0f172a; --muted:#596076; }
+
+    *{ box-sizing: border-box; }
+    html, body{ height:100%; }
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial; background: radial-gradient(1200px 600px at 10% -10%, rgba(139,92,246,.25), transparent), radial-gradient(800px 500px at 110% -20%, rgba(34,211,238,.2), transparent), var(--bg); color:var(--ink); }
+
+    .container{ max-width:1200px; margin:0 auto; padding:20px; }
+
+    /* Header */
+    .header{ position:sticky; top:0; z-index:10; backdrop-filter: blur(10px); background: linear-gradient(180deg, rgba(10,12,20,.85), rgba(10,12,20,.4)); border-bottom:1px solid var(--line); }
+    html[data-theme="light"] .header{ background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.6)); }
+    .header-inner{ max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:14px; padding:12px 20px; }
+    .brand{ display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.5px; }
+    .logo{ width:32px; height:32px; border-radius:8px; background: conic-gradient(from 210deg, var(--accent), var(--accent-2)); box-shadow: 0 4px 18px rgba(139,92,246,.6); }
+    .spacer{ flex:1; }
+    .header .btn{ margin-left:6px; }
+
+    /* Tabs */
+    .tabs{ display:flex; gap:4px; padding:8px; border:1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); box-shadow: var(--shadow); overflow:auto; }
+    .tab{ padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; white-space:nowrap; border:1px solid transparent; }
+    .tab[aria-selected="true"]{ background: linear-gradient(180deg, var(--elev), transparent); border-color: var(--line); box-shadow: inset 0 -2px 0 0 var(--accent); }
+
+    /* Layout */
+    .main{ display:grid; grid-template-columns: 1fr; gap:16px; margin-top:16px; }
+    .card{ background: var(--panel); border:1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding:16px; }
+    .section-title{ margin:0 0 12px; font-size:18px; }
+
+    /* Form */
+    .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
+    .col-2{ grid-column: span 2; } .col-3{ grid-column: span 3; } .col-4{ grid-column: span 4; }
+    .col-6{ grid-column: span 6; } .col-8{ grid-column: span 8; } .col-12{ grid-column: span 12; }
+
+    label{ font-size:12px; color:var(--muted); display:block; margin:6px 0 6px; }
+    input[type=text], input[type=number], select, textarea{ width:100%; background: var(--elev); color: var(--ink); border:1px solid var(--line); border-radius: 12px; padding:10px 12px; outline:none; }
+    textarea{ min-height: 100px; resize: vertical; }
+
+    .help{ font-size:11px; color:var(--muted); }
+    .pill{ display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); padding:8px 10px; border-radius:999px; }
+
+    /* Actions */
+    .actions{ position:sticky; bottom:0; z-index:10; display:flex; gap:10px; justify-content:flex-end; align-items:center; padding:12px; background: linear-gradient(180deg, transparent, rgba(0,0,0,.25)); }
+    html[data-theme="light"] .actions{ background: linear-gradient(180deg, transparent, rgba(255,255,255,.8)); }
+
+    .btn{ border:none; background: var(--elev); border:1px solid var(--line); color: var(--ink); border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer; }
+    .btn.primary{ background: linear-gradient(180deg, var(--accent), #6d28d9); color:white; border:none; box-shadow: 0 6px 20px rgba(139,92,246,.45); }
+    .btn.ghost{ background: transparent; }
+    .btn.warn{ background: linear-gradient(180deg, #f59e0b, #d97706); color:#0b0d14; border:none; }
+
+    .sql{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New"; background: var(--elev); border:1px dashed var(--line); border-radius: 12px; padding:12px; min-height: 160px; white-space: pre; }
+
+    /* Chips preview */
+    .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+    .chip{ padding:6px 10px; border-radius:999px; background: linear-gradient(180deg, var(--elev), transparent); border:1px solid var(--line); font-size:12px; }
+
+    /* Toast */
+    .toast{ position:fixed; right:16px; bottom:16px; background: var(--panel); border:1px solid var(--line); padding:10px 14px; border-radius:12px; box-shadow: var(--shadow); opacity:0; transform: translateY(10px); transition:.25s; }
+    .toast.show{ opacity:1; transform: translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 900px){ .col-6{ grid-column: span 12; } .col-8{ grid-column: span 12; } .col-4{ grid-column: span 12; } .col-3{ grid-column: span 6; } .col-2{ grid-column: span 6; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Zauber Datafiller</h1>
-    <p class="lead">Ein Formular, das dir einen <strong>INSERT</strong> für die Tabelle <code>public.spells_flat</code> generiert (ohne JSONB, eine Tabelle). Werte, die du leer lässt, werden als <code>NULL</code> gesetzt. Listen (z.B. Aliasse, Merkmale) bitte mit <em>Semikolon</em> trennen.</p>
-
-    <div class="grid">
-      <div class="card">
-        <fieldset>
-          <legend>Basis</legend>
-          <div class="row">
-            <div class="col-6">
-              <label for="canonical_name">Name (kanonisch) *</label>
-              <input id="canonical_name" type="text" required />
-            </div>
-            <div class="col-3">
-              <label for="short_name">Kurzname</label>
-              <input id="short_name" type="text" />
-            </div>
-            <div class="col-3">
-              <label for="letter">Buchstabe</label>
-              <input id="letter" type="text" maxlength="1" placeholder="A" />
-              <div class="muted">Automatik: wird aus dem Namen gesetzt.</div>
-            </div>
-            <div class="col-6">
-              <label for="aliases">Aliasse (mit ; trennen)</label>
-              <input id="aliases" type="text" placeholder="aka1; aka2" />
-            </div>
-            <div class="col-2">
-              <label for="complexity">Komplexität *</label>
-              <select id="complexity" required>
-                <option value="">–</option>
-                <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
-              </select>
-            </div>
-            <div class="col-4">
-              <label for="traits">Merkmale (mit ; trennen)</label>
-              <input id="traits" type="text" placeholder="Antimagie; Objekt" />
-            </div>
-            <div class="col-6">
-              <label for="source_book">Quelle</label>
-              <input id="source_book" type="text" value="LCD" />
-            </div>
-            <div class="col-2">
-              <label for="source_page">Seite</label>
-              <input id="source_page" type="number" min="1" />
-            </div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <fieldset>
-          <legend>Probe & Komponenten</legend>
-          <div class="row">
-            <div class="col-2">
-              <label for="probe_attr1">Attr 1</label>
-              <select id="probe_attr1">
-                <option value="">–</option>
-                <option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option>
-              </select>
-            </div>
-            <div class="col-2">
-              <label for="probe_attr2">Attr 2</label>
-              <select id="probe_attr2">
-                <option value="">–</option>
-                <option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option>
-              </select>
-            </div>
-            <div class="col-2">
-              <label for="probe_attr3">Attr 3</label>
-              <select id="probe_attr3">
-                <option value="">–</option>
-                <option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option>
-              </select>
-            </div>
-            <div class="col-2">
-              <label for="probe_base_mod">Basis-Mod</label>
-              <input id="probe_base_mod" type="number" />
-            </div>
-            <div class="col-2">
-              <label>&nbsp;</label>
-              <div class="pill"><input id="probe_vs_mr" type="checkbox" /> <span>vs. MR</span></div>
-            </div>
-          </div>
-          <details style="margin-top:8px;">
-            <summary>Komponenten & Anforderungen</summary>
-            <div class="row" style="margin-top:8px;">
-              <div class="col-2"><label class="pill"><input id="comp_concentration" type="checkbox"> Konzentration</label></div>
-              <div class="col-2"><label class="pill"><input id="comp_sight" type="checkbox"> Sicht</label></div>
-              <div class="col-2"><label class="pill"><input id="comp_geste" type="checkbox"> Geste</label></div>
-              <div class="col-2"><label class="pill"><input id="comp_formel" type="checkbox"> Formel</label></div>
-              <div class="col-4"><label for="comp_material">Material (Text)</label><input id="comp_material" type="text" placeholder="z.B. Kristall"/></div>
-              <div class="col-3"><label class="pill"><input id="req_contact_earth" type="checkbox"> Kontakt mit Erde</label></div>
-              <div class="col-3"><label class="pill"><input id="req_no_refined_metal" type="checkbox"> kein Raffinmetall</label></div>
-              <div class="col-3"><label class="pill"><input id="req_focus_object" type="checkbox"> Fokus-Objekt</label></div>
-              <div class="col-12"><label for="comp_notes">Komponenten Notizen</label><input id="comp_notes" type="text"/></div>
-            </div>
-          </details>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <fieldset>
-          <legend>Zauberdauer, Reichweite, Ziel, Wirkungsdauer</legend>
-          <div class="row">
-            <div class="col-2">
-              <label for="cast_time_unit">ZD Einheit</label>
-              <select id="cast_time_unit">
-                <option value="">–</option>
-                <option>Aktion</option><option>KR</option><option>SR</option><option>Min</option><option>h</option>
-              </select>
-            </div>
-            <div class="col-2">
-              <label for="cast_time_value">ZD Wert</label>
-              <input id="cast_time_value" type="number" step="0.01" />
-            </div>
-            <div class="col-4">
-              <label for="cast_time_formula">ZD Formel (frei)</label>
-              <input id="cast_time_formula" type="text" placeholder="z.B. ZfP*" />
-            </div>
-            <div class="col-4">
-              <label for="cast_time_notes">ZD Notizen</label>
-              <input id="cast_time_notes" type="text" />
-            </div>
-
-            <div class="col-3">
-              <label for="range_type">RW Typ</label>
-              <select id="range_type">
-                <option value="">–</option>
-                <option>Stufe</option>
-                <option>Fix</option>
-                <option>Formel</option>
-                <option>Wert+Einheit</option>
-              </select>
-            </div>
-            <div class="col-3">
-              <label for="range_stage">RW Stufe/Fix</label>
-              <input id="range_stage" type="text" placeholder="Selbst/Berührung/3/7/21/49/Sicht/..." />
-            </div>
-            <div class="col-2">
-              <label for="range_value">RW Wert</label>
-              <input id="range_value" type="number" step="0.01" />
-            </div>
-            <div class="col-2">
-              <label for="range_value_unit">RW Einheit</label>
-              <input id="range_value_unit" type="text" placeholder="Schritt, m, ..." />
-            </div>
-            <div class="col-2">
-              <label>&nbsp;</label>
-              <div class="pill"><input id="range_is_zfw" type="checkbox" /> <span>RW = ZfW</span></div>
-            </div>
-            <div class="col-12">
-              <label for="range_notes">RW Notizen</label>
-              <input id="range_notes" type="text" />
-            </div>
-
-            <div class="col-4">
-              <label for="target_kind">Ziel</label>
-              <input id="target_kind" type="text" placeholder="Einzelperson/Objekt/Zone/..." />
-            </div>
-            <div class="col-2">
-              <label>&nbsp;</label>
-              <div class="pill"><input id="target_willing" type="checkbox" /> <span>freiwillig</span></div>
-            </div>
-            <div class="col-2">
-              <label for="target_quantity"># Ziele</label>
-              <input id="target_quantity" type="number" />
-            </div>
-            <div class="col-2">
-              <label for="target_area_value">Fläche Wert</label>
-              <input id="target_area_value" type="number" step="0.01" />
-            </div>
-            <div class="col-2">
-              <label for="target_area_unit">Fläche Einheit</label>
-              <input id="target_area_unit" type="text" placeholder="m², Schritt, Radius..." />
-            </div>
-            <div class="col-12">
-              <label for="target_notes">Ziel Notizen</label>
-              <input id="target_notes" type="text" />
-            </div>
-
-            <div class="col-3">
-              <label for="duration_type">Wirkungsdauer Typ</label>
-              <select id="duration_type">
-                <option value="">–</option>
-                <option>augenblicklich</option>
-                <option>aufrechterhalten</option>
-                <option>feste Dauer</option>
-                <option>permanent</option>
-              </select>
-            </div>
-            <div class="col-2">
-              <label for="duration_value">Dauer Wert</label>
-              <input id="duration_value" type="number" step="0.01" />
-            </div>
-            <div class="col-2">
-              <label for="duration_unit">Dauer Einheit</label>
-              <input id="duration_unit" type="text" placeholder="KR, SR, min, h, Tage" />
-            </div>
-            <div class="col-2">
-              <label for="duration_cost_per_unit">AsP / Einheit</label>
-              <input id="duration_cost_per_unit" type="number" step="0.01" />
-            </div>
-            <div class="col-3">
-              <label for="duration_cost_unit">Einheit (für AsP/Einheit)</label>
-              <input id="duration_cost_unit" type="text" placeholder="KR, min, ..." />
-            </div>
-            <div class="col-12">
-              <label for="duration_notes">Dauer Notizen</label>
-              <input id="duration_notes" type="text" />
-            </div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <fieldset>
-          <legend>Kosten</legend>
-          <div class="row">
-            <div class="col-2">
-              <label for="cost_base_asp">Basis AsP</label>
-              <input id="cost_base_asp" type="number" step="0.01" />
-            </div>
-            <div class="col-2">
-              <label for="cost_per_unit_asp">AsP pro Einheit</label>
-              <input id="cost_per_unit_asp" type="number" step="0.01" />
-            </div>
-            <div class="col-3">
-              <label for="cost_per_unit_what">Wofür (Einheit)</label>
-              <input id="cost_per_unit_what" type="text" placeholder="KR, 5 Stein, Schritt, ..." />
-            </div>
-            <div class="col-2">
-              <label for="cost_min_asp">Mindest AsP</label>
-              <input id="cost_min_asp" type="number" step="0.01" />
-            </div>
-            <div class="col-3">
-              <label for="cost_perm_note">Permanent Hinweis</label>
-              <input id="cost_perm_note" type="text" placeholder="z.B. 1/10 Zielkosten" />
-            </div>
-            <div class="col-12">
-              <label for="cost_notes">Kosten Notizen</label>
-              <input id="cost_notes" type="text" />
-            </div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <fieldset>
-          <legend>Erlaubte Spontane Modifikationen</legend>
-          <div class="row">
-            <div class="col-3"><label class="pill"><input id="allow_mod_casttime" type="checkbox"> Zauberdauer</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_cost" type="checkbox"> Kosten</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_range" type="checkbox"> Reichweite</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_duration" type="checkbox"> Wirkungsdauer</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_target" type="checkbox"> Ziel</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_multi_vol" type="checkbox"> Mehrere Ziele (freiw.)</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_multi_invol" type="checkbox"> Mehrere Ziele (unfreiw.)</label></div>
-            <div class="col-3"><label class="pill"><input id="allow_mod_erzwingen" type="checkbox"> Erzwingen</label></div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <fieldset>
-          <legend>Varianten & Regeln</legend>
-          <div class="row">
-            <div class="col-12">
-              <label for="variants_text">Varianten (Text)</label>
-              <textarea id="variants_text" placeholder="Eine pro Zeile: Titel – Regel/Schwelle/Rep ..."></textarea>
-            </div>
-            <div class="col-12">
-              <label for="effect_summary">Wirkung (Kurzfassung in eigenen Worten)</label>
-              <textarea id="effect_summary"></textarea>
-            </div>
-            <div class="col-12">
-              <label for="reversalis">Reversalis</label>
-              <textarea id="reversalis"></textarea>
-            </div>
-            <div class="col-12">
-              <label for="antimagic_text">Antimagie/Wechselwirkungen</label>
-              <textarea id="antimagic_text" placeholder="Gegensprüche, Schutzwirkungen, etc."></textarea>
-            </div>
-            <div class="col-12">
-              <label for="notes">Notizen</label>
-              <textarea id="notes"></textarea>
-            </div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <fieldset>
-          <legend>Repräsentationen & Verbreitung (1–7)</legend>
-          <div class="row">
-            <div class="col-2"><label>Mag</label><input id="rep_mag" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Elf</label><input id="rep_elf" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Dru</label><input id="rep_dru" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Hex</label><input id="rep_hex" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Geo</label><input id="rep_geo" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Srl</label><input id="rep_srl" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Bor</label><input id="rep_bor" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Ach</label><input id="rep_ach" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Kop</label><input id="rep_kop" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Sat</label><input id="rep_sat" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Gro</label><input id="rep_gro" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Mud</label><input id="rep_mud" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Gül</label><input id="rep_guel" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Alh</label><input id="rep_alh" type="number" min="1" max="7"/></div>
-            <div class="col-2"><label>Sch (Schelme)</label><input id="rep_sch" type="number" min="1" max="7"/></div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="card">
-        <div class="actions">
-          <button id="gen">SQL erzeugen</button>
-          <button class="secondary" id="copy">SQL kopieren</button>
-          <button class="ghost" id="save">Entwurf speichern</button>
-          <button class="ghost" id="load">Entwurf laden</button>
-          <button class="warn" id="reset">Form leeren</button>
-          <button class="secondary" id="download">Als .sql speichern</button>
-        </div>
-        <label for="sqlOutput" style="margin-top:12px; display:block;">Ausgabe</label>
-        <textarea id="sqlOutput" class="out" spellcheck="false"></textarea>
-        <div class="muted">Hinweis: Strings werden für Postgres korrekt in einfache Anführungszeichen gequotet. Zahlenfelder bleiben Zahlen oder <code>NULL</code>.</div>
-      </div>
+  <div class="header">
+    <div class="header-inner">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="brand">Zauber Datafiller</div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="themeToggle" title="Dark/Light umschalten">🌗</button>
+      <button class="btn ghost" id="load">Entwurf laden</button>
+      <button class="btn ghost" id="save">Entwurf speichern</button>
     </div>
   </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const str = (id) => {
-      const v = $(id).value.trim();
-      return v === '' ? null : v;
-    };
-    const num = (id) => {
-      const v = $(id).value.trim();
-      if (v === '') return null;
-      const n = Number(v);
-      return Number.isFinite(n) ? n : null;
-    };
-    const bool = (id) => $(id).checked ? true : null; // nur true/NULL, um NULL default zu erlauben
+  <div class="container">
+    <div class="tabs" role="tablist" aria-label="Sektionen">
+      <button class="tab" role="tab" aria-selected="true" data-tab="basis">Basis</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="probe">Probe & Komponenten</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="zrw">ZD/RW/Ziel/WD</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="kosten">Kosten</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="mods">Spontanmods</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="varianten">Varianten & Regeln</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="repr">Repräsentationen</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="output">Ausgabe</button>
+    </div>
 
+    <div class="main">
+      <!-- BASIS -->
+      <section class="card" data-pane="basis">
+        <h2 class="section-title">Basis</h2>
+        <div class="grid">
+          <div class="col-6">
+            <label for="canonical_name">Name (kanonisch) *</label>
+            <input id="canonical_name" type="text" required />
+          </div>
+          <div class="col-3">
+            <label for="short_name">Kurzname</label>
+            <input id="short_name" type="text" />
+          </div>
+          <div class="col-3">
+            <label for="letter">Buchstabe</label>
+            <input id="letter" type="text" maxlength="1" placeholder="A" />
+            <div class="help">Wird automatisch aus dem Namen gesetzt.</div>
+          </div>
+          <div class="col-6">
+            <label for="aliases">Aliasse (mit ; trennen)</label>
+            <input id="aliases" type="text" placeholder="aka1; aka2" />
+            <div id="aliasesChips" class="chips" aria-hidden="true"></div>
+          </div>
+          <div class="col-2">
+            <label for="complexity">Komplexität *</label>
+            <select id="complexity" required>
+              <option value="">–</option>
+              <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
+            </select>
+          </div>
+          <div class="col-4">
+            <label for="traits">Merkmale (mit ; trennen)</label>
+            <input id="traits" type="text" placeholder="Antimagie; Objekt" />
+            <div id="traitsChips" class="chips" aria-hidden="true"></div>
+          </div>
+          <div class="col-6">
+            <label for="source_book">Quelle</label>
+            <input id="source_book" type="text" value="LCD" />
+          </div>
+          <div class="col-2">
+            <label for="source_page">Seite</label>
+            <input id="source_page" type="number" min="1" />
+          </div>
+        </div>
+      </section>
+
+      <!-- PROBE & KOMPONENTEN -->
+      <section class="card" data-pane="probe" hidden>
+        <h2 class="section-title">Probe & Komponenten</h2>
+        <div class="grid">
+          <div class="col-2"><label for="probe_attr1">Attr 1</label>
+            <select id="probe_attr1"><option value="">–</option><option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option></select></div>
+          <div class="col-2"><label for="probe_attr2">Attr 2</label>
+            <select id="probe_attr2"><option value="">–</option><option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option></select></div>
+          <div class="col-2"><label for="probe_attr3">Attr 3</label>
+            <select id="probe_attr3"><option value="">–</option><option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option></select></div>
+          <div class="col-2"><label for="probe_base_mod">Basis-Mod</label><input id="probe_base_mod" type="number" /></div>
+          <div class="col-2"><label>&nbsp;</label><div class="pill"><input id="probe_vs_mr" type="checkbox"/> <span>vs. MR</span></div></div>
+        </div>
+        <hr style="border:none; border-top:1px solid var(--line); margin:12px 0;">
+        <div class="grid">
+          <div class="col-2"><label class="pill"><input id="comp_concentration" type="checkbox"> Konzentration</label></div>
+          <div class="col-2"><label class="pill"><input id="comp_sight" type="checkbox"> Sicht</label></div>
+          <div class="col-2"><label class="pill"><input id="comp_geste" type="checkbox"> Geste</label></div>
+          <div class="col-2"><label class="pill"><input id="comp_formel" type="checkbox"> Formel</label></div>
+          <div class="col-4"><label for="comp_material">Material (Text)</label><input id="comp_material" type="text" placeholder="z.B. Kristall"/></div>
+          <div class="col-3"><label class="pill"><input id="req_contact_earth" type="checkbox"> Kontakt mit Erde</label></div>
+          <div class="col-3"><label class="pill"><input id="req_no_refined_metal" type="checkbox"> kein Raffinmetall</label></div>
+          <div class="col-3"><label class="pill"><input id="req_focus_object" type="checkbox"> Fokus-Objekt</label></div>
+          <div class="col-12"><label for="comp_notes">Komponenten Notizen</label><input id="comp_notes" type="text"/></div>
+        </div>
+      </section>
+
+      <!-- ZD/RW/ZIEL/WD -->
+      <section class="card" data-pane="zrw" hidden>
+        <h2 class="section-title">Zauberdauer • Reichweite • Ziel • Wirkungsdauer</h2>
+        <div class="grid">
+          <div class="col-2"><label for="cast_time_unit">ZD Einheit</label>
+            <select id="cast_time_unit"><option value="">–</option><option>Aktion</option><option>KR</option><option>SR</option><option>Min</option><option>h</option></select></div>
+          <div class="col-2"><label for="cast_time_value">ZD Wert</label><input id="cast_time_value" type="number" step="0.01" /></div>
+          <div class="col-4"><label for="cast_time_formula">ZD Formel (frei)</label><input id="cast_time_formula" type="text" placeholder="z.B. ZfP*" /></div>
+          <div class="col-4"><label for="cast_time_notes">ZD Notizen</label><input id="cast_time_notes" type="text" /></div>
+
+          <div class="col-3"><label for="range_type">RW Typ</label>
+            <select id="range_type"><option value="">–</option><option>Stufe</option><option>Fix</option><option>Formel</option><option>Wert+Einheit</option></select></div>
+          <div class="col-3"><label for="range_stage">RW Stufe/Fix</label><input id="range_stage" type="text" placeholder="Selbst/Berührung/3/7/21/49/Sicht/..." /></div>
+          <div class="col-2"><label for="range_value">RW Wert</label><input id="range_value" type="number" step="0.01" /></div>
+          <div class="col-2"><label for="range_value_unit">RW Einheit</label><input id="range_value_unit" type="text" placeholder="Schritt, m, ..." /></div>
+          <div class="col-2"><label>&nbsp;</label><div class="pill"><input id="range_is_zfw" type="checkbox" /> <span>RW = ZfW</span></div></div>
+          <div class="col-12"><label for="range_notes">RW Notizen</label><input id="range_notes" type="text" /></div>
+
+          <div class="col-4"><label for="target_kind">Ziel</label><input id="target_kind" type="text" placeholder="Einzelperson/Objekt/Zone/..." /></div>
+          <div class="col-2"><label>&nbsp;</label><div class="pill"><input id="target_willing" type="checkbox" /> <span>freiwillig</span></div></div>
+          <div class="col-2"><label for="target_quantity"># Ziele</label><input id="target_quantity" type="number" /></div>
+          <div class="col-2"><label for="target_area_value">Fläche Wert</label><input id="target_area_value" type="number" step="0.01" /></div>
+          <div class="col-2"><label for="target_area_unit">Fläche Einheit</label><input id="target_area_unit" type="text" placeholder="m², Schritt, Radius..." /></div>
+          <div class="col-12"><label for="target_notes">Ziel Notizen</label><input id="target_notes" type="text" /></div>
+
+          <div class="col-3"><label for="duration_type">Wirkungsdauer Typ</label>
+            <select id="duration_type"><option value="">–</option><option>augenblicklich</option><option>aufrechterhalten</option><option>feste Dauer</option><option>permanent</option></select></div>
+          <div class="col-2"><label for="duration_value">Dauer Wert</label><input id="duration_value" type="number" step="0.01" /></div>
+          <div class="col-2"><label for="duration_unit">Dauer Einheit</label><input id="duration_unit" type="text" placeholder="KR, SR, min, h, Tage" /></div>
+          <div class="col-2"><label for="duration_cost_per_unit">AsP / Einheit</label><input id="duration_cost_per_unit" type="number" step="0.01" /></div>
+          <div class="col-3"><label for="duration_cost_unit">Einheit (für AsP/Einheit)</label><input id="duration_cost_unit" type="text" placeholder="KR, min, ..." /></div>
+          <div class="col-12"><label for="duration_notes">Dauer Notizen</label><input id="duration_notes" type="text" /></div>
+        </div>
+      </section>
+
+      <!-- KOSTEN -->
+      <section class="card" data-pane="kosten" hidden>
+        <h2 class="section-title">Kosten</h2>
+        <div class="grid">
+          <div class="col-2"><label for="cost_base_asp">Basis AsP</label><input id="cost_base_asp" type="number" step="0.01" /></div>
+          <div class="col-2"><label for="cost_per_unit_asp">AsP pro Einheit</label><input id="cost_per_unit_asp" type="number" step="0.01" /></div>
+          <div class="col-3"><label for="cost_per_unit_what">Wofür (Einheit)</label><input id="cost_per_unit_what" type="text" placeholder="KR, 5 Stein, Schritt, ..." /></div>
+          <div class="col-2"><label for="cost_min_asp">Mindest AsP</label><input id="cost_min_asp" type="number" step="0.01" /></div>
+          <div class="col-3"><label for="cost_perm_note">Permanent Hinweis</label><input id="cost_perm_note" type="text" placeholder="z.B. 1/10 Zielkosten" /></div>
+          <div class="col-12"><label for="cost_notes">Kosten Notizen</label><input id="cost_notes" type="text" /></div>
+        </div>
+      </section>
+
+      <!-- MODS -->
+      <section class="card" data-pane="mods" hidden>
+        <h2 class="section-title">Erlaubte Spontanmods</h2>
+        <div class="grid">
+          <div class="col-3"><label class="pill"><input id="allow_mod_casttime" type="checkbox"> Zauberdauer</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_cost" type="checkbox"> Kosten</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_range" type="checkbox"> Reichweite</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_duration" type="checkbox"> Wirkungsdauer</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_target" type="checkbox"> Ziel</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_multi_vol" type="checkbox"> Mehrere Ziele (freiw.)</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_multi_invol" type="checkbox"> Mehrere Ziele (unfreiw.)</label></div>
+          <div class="col-3"><label class="pill"><input id="allow_mod_erzwingen" type="checkbox"> Erzwingen</label></div>
+        </div>
+      </section>
+
+      <!-- VARIANTEN & REGELN -->
+      <section class="card" data-pane="varianten" hidden>
+        <h2 class="section-title">Varianten & Regeln</h2>
+        <div class="grid">
+          <div class="col-12"><label for="variants_text">Varianten (eine pro Zeile: Titel – Regel/Schwelle/Rep ...)</label><textarea id="variants_text"></textarea></div>
+          <div class="col-12"><label for="effect_summary">Wirkung (Kurzfassung in eigenen Worten)</label><textarea id="effect_summary"></textarea></div>
+          <div class="col-12"><label for="reversalis">Reversalis</label><textarea id="reversalis"></textarea></div>
+          <div class="col-12"><label for="antimagic_text">Antimagie/Wechselwirkungen</label><textarea id="antimagic_text" placeholder="Gegensprüche, Schutzwirkungen, etc."></textarea></div>
+          <div class="col-12"><label for="notes">Notizen</label><textarea id="notes"></textarea></div>
+        </div>
+      </section>
+
+      <!-- REPR -->
+      <section class="card" data-pane="repr" hidden>
+        <h2 class="section-title">Repräsentationen & Verbreitung (1–7)</h2>
+        <div class="grid">
+          <div class="col-2"><label>Mag</label><input id="rep_mag" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Elf</label><input id="rep_elf" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Dru</label><input id="rep_dru" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Hex</label><input id="rep_hex" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Geo</label><input id="rep_geo" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Srl</label><input id="rep_srl" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Bor</label><input id="rep_bor" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Ach</label><input id="rep_ach" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Kop</label><input id="rep_kop" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Sat</label><input id="rep_sat" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Gro</label><input id="rep_gro" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Mud</label><input id="rep_mud" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Gül</label><input id="rep_guel" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Alh</label><input id="rep_alh" type="number" min="1" max="7"/></div>
+          <div class="col-2"><label>Sch</label><input id="rep_sch" type="number" min="1" max="7"/></div>
+        </div>
+      </section>
+
+      <!-- OUTPUT -->
+      <section class="card" data-pane="output" hidden>
+        <h2 class="section-title">Ausgabe</h2>
+        <div>
+          <div class="help">Strings werden korrekt gequotet. Zahlen bleiben Zahlen oder <code>NULL</code>. Tastenkürzel: <strong>Ctrl/⌘ + Enter</strong> erzeugt SQL.</div>
+          <div id="sqlOutput" class="sql" contenteditable="true" spellcheck="false"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Sticky Actions -->
+    <div class="actions">
+      <div class="help" id="progress">0% vollständig</div>
+      <div class="spacer"></div>
+      <button class="btn warn" id="reset">Form leeren</button>
+      <button class="btn" id="download">Als .sql speichern</button>
+      <button class="btn" id="copy">SQL kopieren</button>
+      <button class="btn primary" id="gen">SQL erzeugen</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Kopiert!</div>
+
+  <script>
+    // === Helpers ===
+    const $ = (id) => document.getElementById(id);
+    const E = (sel) => document.querySelector(sel);
+    const all = (sel) => Array.from(document.querySelectorAll(sel));
+
+    const str = (id) => { const el=$(id); if(!el) return null; const v = el.value?.trim?.() ?? ''; return v===''?null:v; };
+    const num = (id) => { const v = $(id)?.value?.trim?.() ?? ''; if(v==='') return null; const n=Number(v); return Number.isFinite(n)?n:null; };
+    const bool = (id) => $(id)?.checked ? true : null;
+
+    // Tabs
+    all('.tab').forEach(t => t.addEventListener('click', () => {
+      all('.tab').forEach(x => x.setAttribute('aria-selected', String(x===t)));
+      const pane = t.dataset.tab;
+      all('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== pane);
+      // focus first input
+      const first = E(`[data-pane="${pane}"] input, [data-pane="${pane}"] select, [data-pane="${pane}"] textarea`);
+      first && first.focus();
+    }));
+
+    // Theme toggle
+    const themeBtn = $('themeToggle');
+    const THEME_KEY = 'zauber_theme';
+    function applyTheme(val){ document.documentElement.setAttribute('data-theme', val); localStorage.setItem(THEME_KEY, val); }
+    applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+    themeBtn.addEventListener('click', ()=>{ const cur = document.documentElement.getAttribute('data-theme'); applyTheme(cur==='dark'?'light':'dark'); });
+
+    // Chips preview for Aliases & Traits
+    function chips(idInput, idChips){
+      const update = () => {
+        const raw = str(idInput) || '';
+        const parts = raw.split(';').map(s=>s.trim()).filter(Boolean);
+        const box = $(idChips); box.innerHTML = parts.map(p=>`<span class="chip">${p}</span>`).join('');
+      };
+      $(idInput).addEventListener('input', update); update();
+    }
+    chips('aliases','aliasesChips');
+    chips('traits','traitsChips');
+
+    // Auto letter
+    function autoLetter(){ const n=str('canonical_name'); if(!n) return; const ch=n.trim().charAt(0).toUpperCase(); if($('letter').value.trim()==='') $('letter').value=ch; }
+    $('canonical_name').addEventListener('input', autoLetter);
+
+    // SQL mapping (identisch zur DB-Struktur ohne JSONB)
     const SQL_COLS = [
       'canonical_name','short_name','aliases','letter','complexity','traits','source_book','source_page',
       'probe_attr1','probe_attr2','probe_attr3','probe_base_mod','probe_vs_mr',
@@ -396,149 +348,66 @@
       'rep_mag','rep_elf','rep_dru','rep_hex','rep_geo','rep_srl','rep_bor','rep_ach','rep_kop','rep_sat','rep_gro','rep_mud','rep_guel','rep_alh','rep_sch'
     ];
 
-    function q(v){
-      if (v === null || v === undefined || v === '') return 'NULL';
-      if (typeof v === 'number') return String(v);
-      if (typeof v === 'boolean') return v ? 'true' : 'false';
-      return '\'' + String(v).replaceAll("'","''") + '\'';
-    }
-
-    function autoLetter(){
-      const n = str('canonical_name');
-      if (!n) return;
-      const ch = n.trim().charAt(0).toUpperCase();
-      if ($( 'letter').value.trim() === '') $( 'letter').value = ch;
-    }
-    $('canonical_name').addEventListener('input', autoLetter);
+    function q(v){ if(v===null || v===undefined || v==='') return 'NULL'; if(typeof v==='number') return String(v); if(typeof v==='boolean') return v?'true':'false'; return '\'' + String(v).replaceAll("'","''") + '\''; }
 
     function valMap(){
       return {
-        canonical_name: str('canonical_name'),
-        short_name: str('short_name'),
-        aliases: str('aliases'),
-        letter: str('letter'),
-        complexity: str('complexity'),
-        traits: str('traits'),
-        source_book: str('source_book'),
-        source_page: num('source_page'),
-
-        probe_attr1: str('probe_attr1'),
-        probe_attr2: str('probe_attr2'),
-        probe_attr3: str('probe_attr3'),
-        probe_base_mod: num('probe_base_mod'),
-        probe_vs_mr: bool('probe_vs_mr'),
-
-        comp_concentration: bool('comp_concentration'),
-        comp_sight: bool('comp_sight'),
-        comp_geste: bool('comp_geste'),
-        comp_formel: bool('comp_formel'),
-        comp_material: str('comp_material'),
-        req_contact_earth: bool('req_contact_earth'),
-        req_no_refined_metal: bool('req_no_refined_metal'),
-        req_focus_object: bool('req_focus_object'),
-        comp_notes: str('comp_notes'),
-
-        cast_time_unit: str('cast_time_unit'),
-        cast_time_value: num('cast_time_value'),
-        cast_time_formula: str('cast_time_formula'),
-        cast_time_notes: str('cast_time_notes'),
-
-        range_type: str('range_type'),
-        range_stage: str('range_stage'),
-        range_value: num('range_value'),
-        range_value_unit: str('range_value_unit'),
-        range_is_zfw: bool('range_is_zfw'),
-        range_notes: str('range_notes'),
-
-        target_kind: str('target_kind'),
-        target_willing: bool('target_willing'),
-        target_quantity: num('target_quantity'),
-        target_area_value: num('target_area_value'),
-        target_area_unit: str('target_area_unit'),
-        target_notes: str('target_notes'),
-
-        duration_type: str('duration_type'),
-        duration_value: num('duration_value'),
-        duration_unit: str('duration_unit'),
-        duration_cost_per_unit: num('duration_cost_per_unit'),
-        duration_cost_unit: str('duration_cost_unit'),
-        duration_notes: str('duration_notes'),
-
-        cost_base_asp: num('cost_base_asp'),
-        cost_per_unit_asp: num('cost_per_unit_asp'),
-        cost_per_unit_what: str('cost_per_unit_what'),
-        cost_min_asp: num('cost_min_asp'),
-        cost_perm_note: str('cost_perm_note'),
-        cost_notes: str('cost_notes'),
-
-        allow_mod_casttime: bool('allow_mod_casttime'),
-        allow_mod_cost: bool('allow_mod_cost'),
-        allow_mod_range: bool('allow_mod_range'),
-        allow_mod_duration: bool('allow_mod_duration'),
-        allow_mod_target: bool('allow_mod_target'),
-        allow_mod_multi_vol: bool('allow_mod_multi_vol'),
-        allow_mod_multi_invol: bool('allow_mod_multi_invol'),
-        allow_mod_erzwingen: bool('allow_mod_erzwingen'),
-
-        variants_text: str('variants_text'),
-        effect_summary: str('effect_summary'),
-        reversalis: str('reversalis'),
-        antimagic_text: str('antimagic_text'),
-        notes: str('notes'),
-
-        rep_mag: num('rep_mag'),
-        rep_elf: num('rep_elf'),
-        rep_dru: num('rep_dru'),
-        rep_hex: num('rep_hex'),
-        rep_geo: num('rep_geo'),
-        rep_srl: num('rep_srl'),
-        rep_bor: num('rep_bor'),
-        rep_ach: num('rep_ach'),
-        rep_kop: num('rep_kop'),
-        rep_sat: num('rep_sat'),
-        rep_gro: num('rep_gro'),
-        rep_mud: num('rep_mud'),
-        rep_guel: num('rep_guel'),
-        rep_alh: num('rep_alh'),
-        rep_sch: num('rep_sch'),
+        canonical_name: str('canonical_name'), short_name: str('short_name'), aliases: str('aliases'), letter: str('letter'), complexity: str('complexity'), traits: str('traits'), source_book: str('source_book'), source_page: num('source_page'),
+        probe_attr1: str('probe_attr1'), probe_attr2: str('probe_attr2'), probe_attr3: str('probe_attr3'), probe_base_mod: num('probe_base_mod'), probe_vs_mr: bool('probe_vs_mr'),
+        comp_concentration: bool('comp_concentration'), comp_sight: bool('comp_sight'), comp_geste: bool('comp_geste'), comp_formel: bool('comp_formel'), comp_material: str('comp_material'), req_contact_earth: bool('req_contact_earth'), req_no_refined_metal: bool('req_no_refined_metal'), req_focus_object: bool('req_focus_object'), comp_notes: str('comp_notes'),
+        cast_time_unit: str('cast_time_unit'), cast_time_value: num('cast_time_value'), cast_time_formula: str('cast_time_formula'), cast_time_notes: str('cast_time_notes'),
+        range_type: str('range_type'), range_stage: str('range_stage'), range_value: num('range_value'), range_value_unit: str('range_value_unit'), range_is_zfw: bool('range_is_zfw'), range_notes: str('range_notes'),
+        target_kind: str('target_kind'), target_willing: bool('target_willing'), target_quantity: num('target_quantity'), target_area_value: num('target_area_value'), target_area_unit: str('target_area_unit'), target_notes: str('target_notes'),
+        duration_type: str('duration_type'), duration_value: num('duration_value'), duration_unit: str('duration_unit'), duration_cost_per_unit: num('duration_cost_per_unit'), duration_cost_unit: str('duration_cost_unit'), duration_notes: str('duration_notes'),
+        cost_base_asp: num('cost_base_asp'), cost_per_unit_asp: num('cost_per_unit_asp'), cost_per_unit_what: str('cost_per_unit_what'), cost_min_asp: num('cost_min_asp'), cost_perm_note: str('cost_perm_note'), cost_notes: str('cost_notes'),
+        allow_mod_casttime: bool('allow_mod_casttime'), allow_mod_cost: bool('allow_mod_cost'), allow_mod_range: bool('allow_mod_range'), allow_mod_duration: bool('allow_mod_duration'), allow_mod_target: bool('allow_mod_target'), allow_mod_multi_vol: bool('allow_mod_multi_vol'), allow_mod_multi_invol: bool('allow_mod_multi_invol'), allow_mod_erzwingen: bool('allow_mod_erzwingen'),
+        variants_text: str('variants_text'), effect_summary: str('effect_summary'), reversalis: str('reversalis'), antimagic_text: str('antimagic_text'), notes: str('notes'),
+        rep_mag: num('rep_mag'), rep_elf: num('rep_elf'), rep_dru: num('rep_dru'), rep_hex: num('rep_hex'), rep_geo: num('rep_geo'), rep_srl: num('rep_srl'), rep_bor: num('rep_bor'), rep_ach: num('rep_ach'), rep_kop: num('rep_kop'), rep_sat: num('rep_sat'), rep_gro: num('rep_gro'), rep_mud: num('rep_mud'), rep_guel: num('rep_guel'), rep_alh: num('rep_alh'), rep_sch: num('rep_sch'),
       };
     }
 
     function buildSQL(){
       const v = valMap();
+      if(!v.canonical_name){ toast('Bitte Name (kanonisch) ausfüllen.'); switchTab('basis'); $('canonical_name').focus(); return; }
+      if(!v.complexity){ toast('Bitte Komplexität wählen.'); switchTab('basis'); $('complexity').focus(); return; }
+      if(!v.letter && v.canonical_name){ v.letter = v.canonical_name.charAt(0).toUpperCase(); $('letter').value = v.letter; }
 
-      // Pflichtfelder prüfen
-      if (!v.canonical_name) {
-        alert('Bitte Name (kanonisch) ausfüllen.');
-        return;
-      }
-      if (!v.complexity) {
-        alert('Bitte Komplexität wählen.');
-        return;
-      }
-      if (!v.letter && v.canonical_name) {
-        v.letter = v.canonical_name.charAt(0).toUpperCase();
-        $('letter').value = v.letter;
-      }
-
-      const cols = [], vals = [];
-      for (const c of SQL_COLS) {
-        cols.push(c);
-        vals.push(q(v[c]));
-      }
+      const cols=[], vals=[]; for(const c of SQL_COLS){ cols.push(c); vals.push(q(v[c])); }
       const sql = `insert into public.spells_flat (\n  ${cols.join(', ')}\n) values (\n  ${vals.join(', ')}\n);`;
-      $('sqlOutput').value = sql;
+      $('sqlOutput').textContent = sql; switchTab('output');
       return sql;
     }
 
+    // Progress indicator (rough completeness)
+    const REQUIRED = ['canonical_name','complexity'];
+    function updateProgress(){
+      const v = valMap();
+      let filled = 0, total = REQUIRED.length; REQUIRED.forEach(k => { if(v[k]) filled++; });
+      const pct = Math.round((filled/total)*100);
+      $('progress').textContent = `${pct}% vollständig`;
+    }
+    updateProgress();
+    all('input, select, textarea').forEach(el => el.addEventListener('input', updateProgress));
+
+    // Buttons
     $('gen').addEventListener('click', (e)=>{ e.preventDefault(); buildSQL(); });
-    $('copy').addEventListener('click', (e)=>{ e.preventDefault(); const sql = $('sqlOutput').value; if (!sql) return; navigator.clipboard.writeText(sql); $('copy').textContent='Kopiert!'; setTimeout(()=>$('copy').textContent='SQL kopieren', 1200); });
-    $('reset').addEventListener('click', (e)=>{ e.preventDefault(); if (!confirm('Formular wirklich leeren?')) return; document.querySelectorAll('input, textarea, select').forEach(el=>{ if (el.type==='checkbox') el.checked=false; else el.value=''; }); $('source_book').value = 'LCD'; $('sqlOutput').value=''; });
+    document.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); buildSQL(); }});
 
-    $('save').addEventListener('click', (e)=>{ e.preventDefault(); const v = valMap(); localStorage.setItem('zauber_draft', JSON.stringify(v)); $('save').textContent='Gespeichert'; setTimeout(()=>$('save').textContent='Entwurf speichern', 1200); });
-    $('load').addEventListener('click', (e)=>{ e.preventDefault(); const raw = localStorage.getItem('zauber_draft'); if (!raw) { alert('Kein gespeicherter Entwurf.'); return; } const v = JSON.parse(raw); for (const [k,val] of Object.entries(v)) { const el = $(k); if (!el) continue; if (typeof val === 'boolean') el.checked = !!val; else if (val === null) el.value=''; else el.value = val; } $('sqlOutput').value=''; });
+    $('copy').addEventListener('click', (e)=>{ e.preventDefault(); const sql = $('sqlOutput').textContent; if(!sql) return; navigator.clipboard.writeText(sql); toast('SQL kopiert'); });
+    $('download').addEventListener('click', (e)=>{ e.preventDefault(); const sql = buildSQL(); if(!sql) return; const blob = new Blob([sql], {type:'text/sql'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); const safe=(str('canonical_name')||'zauber').replace(/[^a-z0-9_-]+/gi,'_').toLowerCase(); a.download=`${safe}.sql`; a.click(); URL.revokeObjectURL(a.href); });
 
-    $('download').addEventListener('click', (e)=>{ e.preventDefault(); const sql = buildSQL(); if (!sql) return; const blob = new Blob([sql], {type:'text/sql'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); const safeName = (str('canonical_name')||'zauber').replace(/[^a-z0-9_-]+/gi,'_').toLowerCase(); a.download = `${safeName}.sql`; a.click(); URL.revokeObjectURL(a.href); });
+    $('reset').addEventListener('click', (e)=>{ e.preventDefault(); if(!confirm('Formular wirklich leeren?')) return; document.querySelectorAll('input, textarea, select').forEach(el=>{ if(el.type==='checkbox') el.checked=false; else el.value=''; }); $('source_book').value='LCD'; $('sqlOutput').textContent=''; updateProgress(); chips('aliases','aliasesChips'); chips('traits','traitsChips'); switchTab('basis'); });
+
+    // Save/Load
+    const DRAFT_KEY='zauber_draft_flat';
+    $('save').addEventListener('click', (e)=>{ e.preventDefault(); localStorage.setItem(DRAFT_KEY, JSON.stringify(valMap())); toast('Entwurf gespeichert'); });
+    $('load').addEventListener('click', (e)=>{ e.preventDefault(); const raw = localStorage.getItem(DRAFT_KEY); if(!raw){ toast('Kein gespeicherter Entwurf'); return; } const v = JSON.parse(raw); for(const [k,val] of Object.entries(v)){ const el=$(k); if(!el) continue; if(typeof val==='boolean') el.checked=!!val; else if(val===null) el.value=''; else el.value=val; } $('sqlOutput').textContent=''; updateProgress(); chips('aliases','aliasesChips'); chips('traits','traitsChips'); toast('Entwurf geladen'); });
+
+    // Toast helper
+    function toast(msg){ const t=$('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1400); }
+
+    // Switch tab helper
+    function switchTab(name){ all('.tab').forEach(x=> x.setAttribute('aria-selected', String(x.dataset.tab===name))); all('[data-pane]').forEach(p=> p.hidden = p.dataset.pane !== name); }
   </script>
 </body>
 </html>

@@ -2,901 +2,543 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Borbarad-DB – Datenfiller</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Supabase CDN (v2, UMD) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Zauber Datafiller – spells_flat</title>
   <style>
-    :root { --bg:#0b1020; --fg:#e7ecff; --muted:#a6b0d6; --card:#121938; --accent:#7aa2f7; --ok:#2ec27e; --warn:#ffb86b; --err:#ff6b6b; }
-    html,body { background:var(--bg); color:var(--fg); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; margin:0; }
-    .wrap { max-width:1100px; margin:0 auto; padding:24px; }
-    h1 { font-size:22px; margin:0 0 16px }
-    h2 { font-size:18px; margin:24px 0 8px }
-    .card { background:var(--card); border:1px solid #1c2754; border-radius:14px; padding:16px; margin:14px 0; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; }
-    .col { flex:1 1 260px; min-width:240px; }
-    label { display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
-    input[type="text"], input[type="number"], textarea, select {
-      width:100%; background:#0c1430; color:var(--fg); border:1px solid #20306a; border-radius:10px; padding:10px; outline:none;
-    }
-    textarea { min-height:72px; }
-    .btn { background:var(--accent); color:#0a0e1f; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; }
-    .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
-    .btn.warn { background:var(--warn); }
-    .btn.err { background:var(--err); }
-    .btn.ok { background:var(--ok); color:#07130b; }
-    .stack { display:flex; gap:10px; flex-wrap:wrap; }
-    .pill { background:#0f1733; border:1px solid #22336f; border-radius:999px; padding:6px 10px; font-size:12px; }
-    .hr { height:1px; background:#233167; margin:16px 0; }
-    .hint { color:var(--muted); font-size:12px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; }
-    details > summary { cursor:pointer; margin:8px 0; color:var(--muted) }
-    .stepper { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px }
-    .stepper .step { padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #30408b; color:var(--muted) }
-    .step.active { background:var(--accent); color:#071020; border-color:var(--accent); }
-    .log { white-space:pre-wrap; background:#0a102a; border:1px dashed #25326a; padding:10px; border-radius:10px; font-size:12px; max-height:200px; overflow:auto; }
-    .list { border:1px solid #24306a; border-radius:10px; padding:10px; background:#0b1230; }
-    .small { font-size:12px; }
-    kbd { background:#0a1335; border:1px solid #2a3c8a; border-radius:6px; padding:2px 6px; font-size:12px; }
+    :root { --bg:#0b0c10; --panel:#111318; --ink:#e5e7eb; --muted:#9ca3af; --acc:#7c3aed; --ok:#10b981; --warn:#f59e0b; --err:#ef4444; }
+    html,body { height:100%; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:linear-gradient(180deg,#0b0c10,#0f1120); color:var(--ink); }
+    .wrap { max-width:1200px; margin:0 auto; padding:24px; }
+    h1 { font-size:28px; margin:0 0 12px; }
+    p.lead { color:var(--muted); margin-top:0; }
+    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
+    .card { grid-column:1 / -1; background:var(--panel); border:1px solid #1f2330; border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    fieldset { border:1px solid #222538; border-radius:12px; padding:12px; }
+    legend { color:#c4b5fd; padding:0 6px; }
+    label { display:block; font-size:12px; color:var(--muted); margin-top:8px; }
+    input[type="text"], input[type="number"], select, textarea { width:100%; box-sizing:border-box; background:#0e1018; color:var(--ink); border:1px solid #24283b; border-radius:10px; padding:10px 12px; outline:none; }
+    textarea { min-height:84px; }
+    .row { display:grid; grid-template-columns: repeat(12, 1fr); gap:10px; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+    .muted { color:var(--muted); font-size:12px; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    button { background:var(--acc); color:white; border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    button.secondary { background:#1f2937; }
+    button.warn { background:var(--warn); color:black; }
+    button.ghost { background:transparent; border:1px solid #2a2e42; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border:1px solid #2c3046; border-radius:999px; }
+    details { border:1px dashed #2c3046; border-radius:12px; padding:8px 10px; }
+    details > summary { cursor:pointer; color:#c4b5fd; font-weight:600; }
+    .ok { color:var(--ok); }
+    .err { color:var(--err); }
+    .out { width:100%; min-height:140px; white-space:pre; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>⚔️ Borbarad-DB Datenfiller</h1>
-  <div class="hint">Einfacher Wizard zum kompletten Anlegen von <b>Sonderfertigkeiten</b> inkl. Stufen, Kosten, Quellen, Voraussetzungen (AND/OR), Geltung, Nutzung, Ressourcen, Wirkungen, Effekten, Konflikten.</div>
+  <div class="wrap">
+    <h1>Zauber Datafiller</h1>
+    <p class="lead">Ein Formular, das dir einen <strong>INSERT</strong> für die Tabelle <code>public.spells_flat</code> generiert (ohne JSONB, eine Tabelle). Werte, die du leer lässt, werden als <code>NULL</code> gesetzt. Listen (z.B. Aliasse, Merkmale) bitte mit <em>Semikolon</em> trennen.</p>
 
-  <!-- Stepper -->
-  <div class="stepper" id="stepper"></div>
-
-  <!-- STEP 0: Supabase -->
-  <div class="card" data-step="0">
-    <h2>0) Verbindung</h2>
-    <div class="row">
-      <div class="col">
-        <label>Supabase URL</label>
-        <input id="sb-url" type="text" value="https://uzgizoikrricctzznlzr.supabase.co" />
-      </div>
-      <div class="col">
-        <label>Anon API Key</label>
-        <input id="sb-key" type="text" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6Z2l6b2lrcnJpY2N0enpubHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDc1MTksImV4cCI6MjA3MjQ4MzUxOX0.MJFMo6PrBXq_3xQGqYeyMKZx0JTqouFBW3eqteXgsm8" />
-      </div>
-    </div>
-    <div class="stack">
-      <button class="btn" id="btn-connect">Verbinden</button>
-      <span id="conn-status" class="pill">nicht verbunden</span>
-    </div>
-    <div class="hint small">Hinweis: Für Inserts/Selects muss RLS passende Policies erlauben. Tabellen- & Spaltennamen entsprechen dem vereinfachten Schema.</div>
-  </div>
-
-  <!-- STEP 1: SF Basis -->
-  <div class="card" data-step="1" hidden>
-    <h2>1) Sonderfertigkeit – Basis</h2>
     <div class="grid">
-      <div>
-        <label>Name *</label>
-        <input id="sf-name" type="text" placeholder="z.B. Meisterparade" />
-      </div>
-      <div>
-        <label>Kurznamen / Alias</label>
-        <input id="sf-kurz" type="text" />
-      </div>
-      <div>
-        <label>Kategorie *</label>
-        <select id="sf-kategorie">
-          <option>Allgemein</option><option>Kampf</option><option>Magie</option><option>Liturgie</option>
-          <option>Handwerk</option><option>Gesellschaft</option><option>Natur</option><option>Wissen</option>
-          <option>Götter/Kulte</option><option>Sonstiges</option>
-        </select>
-      </div>
-      <div>
-        <label>Status *</label>
-        <select id="sf-status"><option>offiziell</option><option>inoffiziell</option><option>hausregel</option><option>entfernt</option></select>
-      </div>
-      <div>
-        <label>Regelwerk</label>
-        <input id="sf-regelwerk" type="text" value="DSA 4.1" />
-      </div>
-      <div>
-        <label>Einzigartig?</label>
-        <select id="sf-einzigartig"><option value="false">nein</option><option value="true">ja</option></select>
-      </div>
-      <div>
-        <label>Gestuft?</label>
-        <select id="sf-gestuft"><option value="false">nein</option><option value="true">ja</option></select>
-      </div>
-      <div class="col" style="grid-column:1/-1">
-        <label>Kurzbeschreibung</label>
-        <textarea id="sf-desc"></textarea>
-      </div>
-      <div class="col" style="grid-column:1/-1">
-        <label>Bemerkung (intern)</label>
-        <textarea id="sf-note"></textarea>
-      </div>
-    </div>
-    <div class="stack">
-      <button class="btn" id="btn-save-sf">SF anlegen</button>
-      <span class="pill" id="sf-created">ID: —</span>
-      <button class="btn ghost" id="btn-next-1">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 2: Stufen -->
-  <div class="card" data-step="2" hidden>
-    <h2>2) Stufen/Varianten (optional; nur wenn „gestuft“)</h2>
-    <div class="list" id="stufe-list"></div>
-    <div class="stack">
-      <input id="stufe-bez" type="text" placeholder='Bezeichnung (z.B. "I")' />
-      <input id="stufe-ord" type="number" placeholder="Reihenfolge" value="1" />
-      <button class="btn" id="btn-add-stufe">Stufe hinzufügen</button>
-    </div>
-    <div class="stack">
-      <button class="btn ghost" id="btn-next-2">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 3: Kosten -->
-  <div class="card" data-step="3" hidden>
-    <h2>3) AP-Kosten</h2>
-    <div id="kosten-form" class="grid"></div>
-    <div class="stack">
-      <button class="btn" id="btn-save-kosten">Kosten speichern</button>
-      <button class="btn ghost" id="btn-next-3">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 4: Quellen -->
-  <div class="card" data-step="4" hidden>
-    <h2>4) Quellen</h2>
-    <div id="quelle-form" class="grid"></div>
-    <div class="stack">
-      <button class="btn" id="btn-save-quellen">Quellen speichern</button>
-      <button class="btn ghost" id="btn-next-4">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 5: Voraussetzungen -->
-  <div class="card" data-step="5" hidden>
-    <h2>5) Voraussetzungen</h2>
-    <div id="pre-group-list"></div>
-    <div class="stack">
-      <select id="pre-logik"><option>AND</option><option>OR</option></select>
-      <input id="pre-title" type="text" placeholder="Titel (optional)" />
-      <button class="btn" id="btn-add-pre-grp">Gruppe hinzufügen</button>
-    </div>
-    <details>
-      <summary>Item hinzufügen (gewählte Gruppe)</summary>
-      <div class="grid">
-        <div>
-          <label>Gruppe</label>
-          <select id="pre-group-select"></select>
-        </div>
-        <div>
-          <label>Typ</label>
-          <select id="pre-typ">
-            <option value="attr">Attribut</option>
-            <option value="katalog">Katalog (Talent/Waffengruppe/...)</option>
-            <option value="sf">Sonderfertigkeit</option>
-            <option value="text">Freitext</option>
-          </select>
-        </div>
-        <div id="pre-attr" class="row">
-          <div class="col">
-            <label>Eigenschaft</label>
-            <select id="pre-attr-code"><option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option></select>
-          </div>
-          <div class="col">
-            <label>Vergleich</label>
-            <select id="pre-attr-op"><option>&gt;=</option><option>&gt;</option><option>=</option><option>&lt;=</option><option>&lt;</option><option>!=</option></select>
-          </div>
-          <div class="col">
-            <label>Wert</label>
-            <input id="pre-attr-val" type="number" />
-          </div>
-        </div>
-        <div id="pre-katalog" class="row" hidden>
-          <div class="col">
-            <label>Katalog-Typ</label>
-            <select id="pre-katalog-typ">
-              <option>talent</option><option>waffengruppe</option><option>tradition</option>
-              <option>vorteil</option><option>nachteil</option><option>kultur</option><option>profession</option>
-            </select>
-          </div>
-          <div class="col">
-            <label>Name (suchen/neu)</label>
-            <input id="pre-katalog-name" type="text" placeholder="z.B. Schwerter" />
-          </div>
-          <div class="col">
-            <label>Min-Wert (optional)</label>
-            <input id="pre-katalog-min" type="number" />
-          </div>
-          <div class="col">
-            <label>Label</label>
-            <input id="pre-katalog-label" type="text" placeholder="TaW / Anzahl / Stufe" />
-          </div>
-        </div>
-        <div id="pre-sf" class="row" hidden>
-          <div class="col">
-            <label>SF suchen (Name)</label>
-            <input id="pre-sf-search" type="text" placeholder="Name der benötigten SF" />
-          </div>
-          <div class="col">
-            <label>benötigte Stufe (Text)</label>
-            <input id="pre-sf-stufe" type="text" placeholder='z.B. "I"' />
-          </div>
-        </div>
-        <div id="pre-text" class="row" hidden>
-          <div class="col" style="min-width:100%">
-            <label>Freitext</label>
-            <textarea id="pre-freetext"></textarea>
-          </div>
-        </div>
-        <div class="stack">
-          <button class="btn" id="btn-add-pre-item">Item speichern</button>
-        </div>
-      </div>
-    </details>
-    <div class="stack">
-      <button class="btn ghost" id="btn-next-5">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 6: Geltungsbereich -->
-  <div class="card" data-step="6" hidden>
-    <h2>6) Geltungsbereich</h2>
-    <div class="row">
-      <div class="col">
-        <label>Typ</label>
-        <select id="gelt-typ"><option>talent</option><option>waffengruppe</option><option>tradition</option></select>
-      </div>
-      <div class="col">
-        <label>Name (suchen/neu)</label>
-        <input id="gelt-name" type="text" placeholder="z.B. Schwerter" />
-      </div>
-      <div class="col">
-        <label>Kommentar</label>
-        <input id="gelt-kommentar" type="text" />
-      </div>
-    </div>
-    <div class="stack">
-      <button class="btn" id="btn-add-geltung">Geltung hinzufügen</button>
-    </div>
-    <div id="geltung-list" class="list"></div>
-    <div class="stack">
-      <button class="btn ghost" id="btn-next-6">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 7: Nutzung + Ressourcen -->
-  <div class="card" data-step="7" hidden>
-    <h2>7) Nutzung</h2>
-    <div class="row">
-      <div class="col">
-        <label>Stufe (optional)</label>
-        <select id="nut-stufe"></select>
-      </div>
-      <div class="col">
-        <label>Aktivierung</label>
-        <select id="nut-aktiv"><option>passiv</option><option>frei</option><option>aktion</option><option>reaktion</option><option>permanent</option></select>
-      </div>
-      <div class="col">
-        <label>Aktionen (z.B. 1.0)</label>
-        <input id="nut-aktionen" type="number" step="0.1" />
-      </div>
-      <div class="col">
-        <label>Dauer-Typ</label>
-        <input id="nut-dauertyp" type="text" placeholder="sofortig / x KR / anhaltend / ..." />
-      </div>
-      <div class="col">
-        <label>Dauer-Wert</label>
-        <input id="nut-dauerwert" type="text" placeholder="2 KR / TaP*/2 KR / ..." />
-      </div>
-      <div class="col">
-        <label>Bedingung</label>
-        <input id="nut-beding" type="text" placeholder="z.B. nur im Nahkampf" />
-      </div>
-    </div>
-    <div class="stack">
-      <button class="btn" id="btn-save-nutzung">Nutzung speichern</button>
-      <span class="pill" id="nut-id">nutzung_id: —</span>
-    </div>
-    <details>
-      <summary>Ressource hinzufügen</summary>
-      <div class="row">
-        <div class="col">
-          <label>Typ</label>
-          <select id="res-typ"><option>AP</option><option>AsP</option><option>KaP</option><option>AuP</option><option>LE</option><option>sonstige</option></select>
-        </div>
-        <div class="col">
-          <label>Betrag (fix) – oder Formel unten</label>
-          <input id="res-betrag" type="number" />
-        </div>
-        <div class="col">
-          <label>Formel</label>
-          <input id="res-formel" type="text" placeholder="optional" />
-        </div>
-        <div class="col">
-          <label>Bemerkung</label>
-          <input id="res-bem" type="text" />
-        </div>
-      </div>
-      <div class="stack">
-        <button class="btn" id="btn-add-ress">Ressource speichern</button>
-      </div>
-      <div id="ress-list" class="list"></div>
-    </details>
-    <div class="stack">
-      <button class="btn ghost" id="btn-next-7">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 8: Wirkungen + Effekte -->
-  <div class="card" data-step="8" hidden>
-    <h2>8) Wirkungen</h2>
-    <div class="row">
-      <div class="col">
-        <label>Stufe (optional)</label>
-        <select id="wtext-stufe"></select>
-      </div>
-      <div class="col" style="flex:1 1 100%">
-        <label>Wirkungstext</label>
-        <textarea id="wtext-text"></textarea>
-      </div>
-    </div>
-    <div class="stack">
-      <button class="btn" id="btn-add-wtext">Wirkungstext speichern</button>
-    </div>
-    <details>
-      <summary>Strukturierter Effekt</summary>
-      <div class="grid">
-        <div>
-          <label>Stufe (optional)</label>
-          <select id="eff-stufe"></select>
-        </div>
-        <div>
-          <label>Ziel-Typ</label>
-          <input id="eff-zieltyp" type="text" placeholder="AT / PA / INI / TP / MR / Talentprobe / ..." />
-        </div>
-        <div>
-          <label>Ziel-Katalog (optional)</label>
+      <div class="card">
+        <fieldset>
+          <legend>Basis</legend>
           <div class="row">
-            <select id="eff-kat-typ">
-              <option value="">—</option>
-              <option>talent</option><option>waffengruppe</option><option>tradition</option>
-            </select>
-            <input id="eff-kat-name" type="text" placeholder="z.B. Schwerter" />
+            <div class="col-6">
+              <label for="canonical_name">Name (kanonisch) *</label>
+              <input id="canonical_name" type="text" required />
+            </div>
+            <div class="col-3">
+              <label for="short_name">Kurzname</label>
+              <input id="short_name" type="text" />
+            </div>
+            <div class="col-3">
+              <label for="letter">Buchstabe</label>
+              <input id="letter" type="text" maxlength="1" placeholder="A" />
+              <div class="muted">Automatik: wird aus dem Namen gesetzt.</div>
+            </div>
+            <div class="col-6">
+              <label for="aliases">Aliasse (mit ; trennen)</label>
+              <input id="aliases" type="text" placeholder="aka1; aka2" />
+            </div>
+            <div class="col-2">
+              <label for="complexity">Komplexität *</label>
+              <select id="complexity" required>
+                <option value="">–</option>
+                <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label for="traits">Merkmale (mit ; trennen)</label>
+              <input id="traits" type="text" placeholder="Antimagie; Objekt" />
+            </div>
+            <div class="col-6">
+              <label for="source_book">Quelle</label>
+              <input id="source_book" type="text" value="LCD" />
+            </div>
+            <div class="col-2">
+              <label for="source_page">Seite</label>
+              <input id="source_page" type="number" min="1" />
+            </div>
           </div>
-        </div>
-        <div>
-          <label>Operator</label>
-          <select id="eff-op"><option>add</option><option>mult</option><option>ersetze</option></select>
-        </div>
-        <div>
-          <label>Wert (numerisch)</label>
-          <input id="eff-num" type="number" step="0.1" />
-        </div>
-        <div>
-          <label>Würfelwert (Text)</label>
-          <input id="eff-wurf" type="text" placeholder="+1W6" />
-        </div>
-        <div>
-          <label>Bedingung</label>
-          <input id="eff-bed" type="text" />
-        </div>
-        <div>
-          <label>Stapelregel</label>
-          <input id="eff-stack" type="text" />
-        </div>
+        </fieldset>
       </div>
-      <div class="stack">
-        <button class="btn" id="btn-add-eff">Effekt speichern</button>
+
+      <div class="card">
+        <fieldset>
+          <legend>Probe & Komponenten</legend>
+          <div class="row">
+            <div class="col-2">
+              <label for="probe_attr1">Attr 1</label>
+              <select id="probe_attr1">
+                <option value="">–</option>
+                <option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <label for="probe_attr2">Attr 2</label>
+              <select id="probe_attr2">
+                <option value="">–</option>
+                <option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <label for="probe_attr3">Attr 3</label>
+              <select id="probe_attr3">
+                <option value="">–</option>
+                <option>MU</option><option>KL</option><option>IN</option><option>CH</option><option>FF</option><option>GE</option><option>KO</option><option>KK</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <label for="probe_base_mod">Basis-Mod</label>
+              <input id="probe_base_mod" type="number" />
+            </div>
+            <div class="col-2">
+              <label>&nbsp;</label>
+              <div class="pill"><input id="probe_vs_mr" type="checkbox" /> <span>vs. MR</span></div>
+            </div>
+          </div>
+          <details style="margin-top:8px;">
+            <summary>Komponenten & Anforderungen</summary>
+            <div class="row" style="margin-top:8px;">
+              <div class="col-2"><label class="pill"><input id="comp_concentration" type="checkbox"> Konzentration</label></div>
+              <div class="col-2"><label class="pill"><input id="comp_sight" type="checkbox"> Sicht</label></div>
+              <div class="col-2"><label class="pill"><input id="comp_geste" type="checkbox"> Geste</label></div>
+              <div class="col-2"><label class="pill"><input id="comp_formel" type="checkbox"> Formel</label></div>
+              <div class="col-4"><label for="comp_material">Material (Text)</label><input id="comp_material" type="text" placeholder="z.B. Kristall"/></div>
+              <div class="col-3"><label class="pill"><input id="req_contact_earth" type="checkbox"> Kontakt mit Erde</label></div>
+              <div class="col-3"><label class="pill"><input id="req_no_refined_metal" type="checkbox"> kein Raffinmetall</label></div>
+              <div class="col-3"><label class="pill"><input id="req_focus_object" type="checkbox"> Fokus-Objekt</label></div>
+              <div class="col-12"><label for="comp_notes">Komponenten Notizen</label><input id="comp_notes" type="text"/></div>
+            </div>
+          </details>
+        </fieldset>
       </div>
-    </details>
-    <div class="stack">
-      <button class="btn ghost" id="btn-next-8">Weiter</button>
+
+      <div class="card">
+        <fieldset>
+          <legend>Zauberdauer, Reichweite, Ziel, Wirkungsdauer</legend>
+          <div class="row">
+            <div class="col-2">
+              <label for="cast_time_unit">ZD Einheit</label>
+              <select id="cast_time_unit">
+                <option value="">–</option>
+                <option>Aktion</option><option>KR</option><option>SR</option><option>Min</option><option>h</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <label for="cast_time_value">ZD Wert</label>
+              <input id="cast_time_value" type="number" step="0.01" />
+            </div>
+            <div class="col-4">
+              <label for="cast_time_formula">ZD Formel (frei)</label>
+              <input id="cast_time_formula" type="text" placeholder="z.B. ZfP*" />
+            </div>
+            <div class="col-4">
+              <label for="cast_time_notes">ZD Notizen</label>
+              <input id="cast_time_notes" type="text" />
+            </div>
+
+            <div class="col-3">
+              <label for="range_type">RW Typ</label>
+              <select id="range_type">
+                <option value="">–</option>
+                <option>Stufe</option>
+                <option>Fix</option>
+                <option>Formel</option>
+                <option>Wert+Einheit</option>
+              </select>
+            </div>
+            <div class="col-3">
+              <label for="range_stage">RW Stufe/Fix</label>
+              <input id="range_stage" type="text" placeholder="Selbst/Berührung/3/7/21/49/Sicht/..." />
+            </div>
+            <div class="col-2">
+              <label for="range_value">RW Wert</label>
+              <input id="range_value" type="number" step="0.01" />
+            </div>
+            <div class="col-2">
+              <label for="range_value_unit">RW Einheit</label>
+              <input id="range_value_unit" type="text" placeholder="Schritt, m, ..." />
+            </div>
+            <div class="col-2">
+              <label>&nbsp;</label>
+              <div class="pill"><input id="range_is_zfw" type="checkbox" /> <span>RW = ZfW</span></div>
+            </div>
+            <div class="col-12">
+              <label for="range_notes">RW Notizen</label>
+              <input id="range_notes" type="text" />
+            </div>
+
+            <div class="col-4">
+              <label for="target_kind">Ziel</label>
+              <input id="target_kind" type="text" placeholder="Einzelperson/Objekt/Zone/..." />
+            </div>
+            <div class="col-2">
+              <label>&nbsp;</label>
+              <div class="pill"><input id="target_willing" type="checkbox" /> <span>freiwillig</span></div>
+            </div>
+            <div class="col-2">
+              <label for="target_quantity"># Ziele</label>
+              <input id="target_quantity" type="number" />
+            </div>
+            <div class="col-2">
+              <label for="target_area_value">Fläche Wert</label>
+              <input id="target_area_value" type="number" step="0.01" />
+            </div>
+            <div class="col-2">
+              <label for="target_area_unit">Fläche Einheit</label>
+              <input id="target_area_unit" type="text" placeholder="m², Schritt, Radius..." />
+            </div>
+            <div class="col-12">
+              <label for="target_notes">Ziel Notizen</label>
+              <input id="target_notes" type="text" />
+            </div>
+
+            <div class="col-3">
+              <label for="duration_type">Wirkungsdauer Typ</label>
+              <select id="duration_type">
+                <option value="">–</option>
+                <option>augenblicklich</option>
+                <option>aufrechterhalten</option>
+                <option>feste Dauer</option>
+                <option>permanent</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <label for="duration_value">Dauer Wert</label>
+              <input id="duration_value" type="number" step="0.01" />
+            </div>
+            <div class="col-2">
+              <label for="duration_unit">Dauer Einheit</label>
+              <input id="duration_unit" type="text" placeholder="KR, SR, min, h, Tage" />
+            </div>
+            <div class="col-2">
+              <label for="duration_cost_per_unit">AsP / Einheit</label>
+              <input id="duration_cost_per_unit" type="number" step="0.01" />
+            </div>
+            <div class="col-3">
+              <label for="duration_cost_unit">Einheit (für AsP/Einheit)</label>
+              <input id="duration_cost_unit" type="text" placeholder="KR, min, ..." />
+            </div>
+            <div class="col-12">
+              <label for="duration_notes">Dauer Notizen</label>
+              <input id="duration_notes" type="text" />
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card">
+        <fieldset>
+          <legend>Kosten</legend>
+          <div class="row">
+            <div class="col-2">
+              <label for="cost_base_asp">Basis AsP</label>
+              <input id="cost_base_asp" type="number" step="0.01" />
+            </div>
+            <div class="col-2">
+              <label for="cost_per_unit_asp">AsP pro Einheit</label>
+              <input id="cost_per_unit_asp" type="number" step="0.01" />
+            </div>
+            <div class="col-3">
+              <label for="cost_per_unit_what">Wofür (Einheit)</label>
+              <input id="cost_per_unit_what" type="text" placeholder="KR, 5 Stein, Schritt, ..." />
+            </div>
+            <div class="col-2">
+              <label for="cost_min_asp">Mindest AsP</label>
+              <input id="cost_min_asp" type="number" step="0.01" />
+            </div>
+            <div class="col-3">
+              <label for="cost_perm_note">Permanent Hinweis</label>
+              <input id="cost_perm_note" type="text" placeholder="z.B. 1/10 Zielkosten" />
+            </div>
+            <div class="col-12">
+              <label for="cost_notes">Kosten Notizen</label>
+              <input id="cost_notes" type="text" />
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card">
+        <fieldset>
+          <legend>Erlaubte Spontane Modifikationen</legend>
+          <div class="row">
+            <div class="col-3"><label class="pill"><input id="allow_mod_casttime" type="checkbox"> Zauberdauer</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_cost" type="checkbox"> Kosten</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_range" type="checkbox"> Reichweite</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_duration" type="checkbox"> Wirkungsdauer</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_target" type="checkbox"> Ziel</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_multi_vol" type="checkbox"> Mehrere Ziele (freiw.)</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_multi_invol" type="checkbox"> Mehrere Ziele (unfreiw.)</label></div>
+            <div class="col-3"><label class="pill"><input id="allow_mod_erzwingen" type="checkbox"> Erzwingen</label></div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card">
+        <fieldset>
+          <legend>Varianten & Regeln</legend>
+          <div class="row">
+            <div class="col-12">
+              <label for="variants_text">Varianten (Text)</label>
+              <textarea id="variants_text" placeholder="Eine pro Zeile: Titel – Regel/Schwelle/Rep ..."></textarea>
+            </div>
+            <div class="col-12">
+              <label for="effect_summary">Wirkung (Kurzfassung in eigenen Worten)</label>
+              <textarea id="effect_summary"></textarea>
+            </div>
+            <div class="col-12">
+              <label for="reversalis">Reversalis</label>
+              <textarea id="reversalis"></textarea>
+            </div>
+            <div class="col-12">
+              <label for="antimagic_text">Antimagie/Wechselwirkungen</label>
+              <textarea id="antimagic_text" placeholder="Gegensprüche, Schutzwirkungen, etc."></textarea>
+            </div>
+            <div class="col-12">
+              <label for="notes">Notizen</label>
+              <textarea id="notes"></textarea>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card">
+        <fieldset>
+          <legend>Repräsentationen & Verbreitung (1–7)</legend>
+          <div class="row">
+            <div class="col-2"><label>Mag</label><input id="rep_mag" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Elf</label><input id="rep_elf" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Dru</label><input id="rep_dru" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Hex</label><input id="rep_hex" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Geo</label><input id="rep_geo" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Srl</label><input id="rep_srl" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Bor</label><input id="rep_bor" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Ach</label><input id="rep_ach" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Kop</label><input id="rep_kop" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Sat</label><input id="rep_sat" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Gro</label><input id="rep_gro" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Mud</label><input id="rep_mud" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Gül</label><input id="rep_guel" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Alh</label><input id="rep_alh" type="number" min="1" max="7"/></div>
+            <div class="col-2"><label>Sch (Schelme)</label><input id="rep_sch" type="number" min="1" max="7"/></div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card">
+        <div class="actions">
+          <button id="gen">SQL erzeugen</button>
+          <button class="secondary" id="copy">SQL kopieren</button>
+          <button class="ghost" id="save">Entwurf speichern</button>
+          <button class="ghost" id="load">Entwurf laden</button>
+          <button class="warn" id="reset">Form leeren</button>
+          <button class="secondary" id="download">Als .sql speichern</button>
+        </div>
+        <label for="sqlOutput" style="margin-top:12px; display:block;">Ausgabe</label>
+        <textarea id="sqlOutput" class="out" spellcheck="false"></textarea>
+        <div class="muted">Hinweis: Strings werden für Postgres korrekt in einfache Anführungszeichen gequotet. Zahlenfelder bleiben Zahlen oder <code>NULL</code>.</div>
+      </div>
     </div>
   </div>
 
-  <!-- STEP 9: Konflikte -->
-  <div class="card" data-step="9" hidden>
-    <h2>9) Konflikte (inkompatible SFs)</h2>
-    <div class="row">
-      <div class="col">
-        <label>Gegen-SF (Name suchen)</label>
-        <input id="konf-suche" type="text" placeholder="Name..." />
-      </div>
-      <div class="col">
-        <label>Bemerkung</label>
-        <input id="konf-bem" type="text" />
-      </div>
-    </div>
-    <div class="stack">
-      <button class="btn" id="btn-add-konflikt">Konflikt speichern</button>
-    </div>
-    <div id="konf-list" class="list"></div>
-    <div class="stack">
-      <button class="btn ghost" id="btn-next-9">Weiter</button>
-    </div>
-  </div>
-
-  <!-- STEP 10: Review/Checkliste -->
-  <div class="card" data-step="10" hidden>
-    <h2>10) Review & Checkliste</h2>
-    <div id="checkliste" class="list"></div>
-    <div class="stack">
-      <button class="btn" id="btn-refresh-check">Checkliste aktualisieren</button>
-      <button class="btn warn" id="btn-del-sf">Diese SF löschen (Rollback)</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Log</h2>
-    <div id="log" class="log">Bereit.</div>
-  </div>
-</div>
-
-<script>
-/** ---------- Supabase Setup ---------- **/
-let client = null;
-let currentSfId = null;
-let currentGestuft = false;
-let stufen = []; // cache
-const $ = (q) => document.querySelector(q);
-const $$ = (q) => Array.from(document.querySelectorAll(q));
-const log = (m, type="") => {
-  const el = $("#log");
-  const prefix = type==="err" ? "❌ " : type==="ok" ? "✅ " : type==="warn" ? "⚠️ " : "• ";
-  el.textContent += "\\n" + prefix + m;
-  el.scrollTop = el.scrollHeight;
-};
-const setStepper = (active=0) => {
-  const steps = [
-    "Verbindung","SF Basis","Stufen","Kosten","Quellen","Voraussetzungen",
-    "Geltung","Nutzung","Wirkungen","Konflikte","Review"
-  ];
-  const s = $("#stepper");
-  s.innerHTML = "";
-  steps.forEach((t,i)=>{
-    const span = document.createElement("span");
-    span.className = "step" + (i===active?" active":"");
-    span.textContent = (i)+") "+t;
-    s.appendChild(span);
-  });
-  $$("[data-step]").forEach(div => div.hidden = parseInt(div.dataset.step,10) !== active);
-};
-setStepper(0);
-
-// show/hide blocks helpers
-$("#pre-typ").addEventListener("change", ()=>{
-  const v = $("#pre-typ").value;
-  $("#pre-attr").hidden = v!=="attr";
-  $("#pre-katalog").hidden = v!=="katalog";
-  $("#pre-sf").hidden = v!=="sf";
-  $("#pre-text").hidden = v!=="text";
-});
-
-// connect
-$("#btn-connect").addEventListener("click", async ()=>{
-  const url = $("#sb-url").value.trim();
-  const key = $("#sb-key").value.trim();
-  try{
-    const { createClient } = supabase; // UMD global
-    client = createClient(url, key);
-    // simple ping: list tables by selecting from an existing one (sonderfertigkeit may be empty — we just call from('katalog') with limit 1)
-    const { error } = await client.from("katalog").select("id").limit(1);
-    if (error && !error.message.includes("relation") ) {
-      throw error;
-    }
-    $("#conn-status").textContent = "verbunden";
-    $("#conn-status").style.background = "var(--ok)";
-    log("Verbindung erfolgreich.");
-    setStepper(1);
-  }catch(e){
-    log("Verbindung fehlgeschlagen: "+e.message, "err");
-  }
-});
-
-/** ---------- Helpers ---------- **/
-async function upsertKatalog(typ, name, gruppe=null){
-  if (!name || !typ) throw new Error("Katalog: typ/name fehlen");
-  const { data, error } = await client
-    .from("katalog")
-    .upsert({ typ, name, gruppe }, { onConflict: "typ,name" })
-    .select("id").single();
-  if (error) throw error;
-  return data.id;
-}
-async function searchSFByName(q){
-  const { data, error } = await client.from("sonderfertigkeit").select("id,name").ilike("name", `%${q}%`).limit(10);
-  if (error) throw error;
-  return data||[];
-}
-async function getStufen(sf_id){
-  const { data, error } = await client.from("sf_stufe").select("*").eq("sf_id", sf_id).order("reihenfolge",{ascending:true});
-  if (error) throw error;
-  return data||[];
-}
-function parseNum(v){ if(v===""||v===null||v===undefined) return null; const n=Number(v); return Number.isFinite(n)?n:null; }
-
-/** ---------- STEP 1: SF Basis ---------- **/
-$("#btn-save-sf").addEventListener("click", async ()=>{
-  try{
-    const payload = {
-      name: $("#sf-name").value.trim(),
-      kurzname: $("#sf-kurz").value.trim() || null,
-      kategorie: $("#sf-kategorie").value,
-      status: $("#sf-status").value,
-      regelwerk: $("#sf-regelwerk").value.trim() || "DSA 4.1",
-      beschreibung_kurz: $("#sf-desc").value.trim() || null,
-      bemerkung: $("#sf-note").value.trim() || null,
-      einzigartig: $("#sf-einzigartig").value === "true",
-      gestuft: $("#sf-gestuft").value === "true"
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const str = (id) => {
+      const v = $(id).value.trim();
+      return v === '' ? null : v;
     };
-    if(!payload.name) throw new Error("Name ist Pflicht");
-    const { data, error } = await client.from("sonderfertigkeit").insert(payload).select("id,gestuft").single();
-    if (error) throw error;
-    currentSfId = data.id; currentGestuft = data.gestuft;
-    $("#sf-created").textContent = "ID: "+currentSfId;
-    log(`SF angelegt (id=${currentSfId})`,"ok");
-    // prepare next steps
-    stufen = await getStufen(currentSfId);
-    renderKostenForm();
-    renderQuelleForm();
-    renderStufeUI();
-    renderStufeSelects();
-  }catch(e){
-    log("Fehler beim Anlegen: "+e.message,"err");
-  }
-});
-$("#btn-next-1").addEventListener("click", ()=> setStepper(2));
+    const num = (id) => {
+      const v = $(id).value.trim();
+      if (v === '') return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    const bool = (id) => $(id).checked ? true : null; // nur true/NULL, um NULL default zu erlauben
 
-/** ---------- STEP 2: Stufen ---------- **/
-function renderStufeUI(){
-  $("#stufe-list").innerHTML = (stufen.length? stufen.map(s=>`<div class="pill">#${s.id} ${s.bezeichnung} (ord ${s.reihenfolge})</div>`).join(" ") : "<div class='hint'>Noch keine Stufen.</div>");
-}
-$("#btn-add-stufe").addEventListener("click", async ()=>{
-  try{
-    if(!currentSfId) throw new Error("Zuerst SF anlegen.");
-    const bezeichnung = $("#stufe-bez").value.trim();
-    const reihenfolge = parseInt($("#stufe-ord").value||"1",10);
-    if(!bezeichnung) throw new Error("Bezeichnung fehlt.");
-    const { data, error } = await client.from("sf_stufe").insert({ sf_id: currentSfId, bezeichnung, reihenfolge }).select("*").single();
-    if (error) throw error;
-    stufen.push(data);
-    renderStufeUI();
-    renderStufeSelects();
-    renderKostenForm();
-    renderQuelleForm();
-    log(`Stufe gespeichert: ${bezeichnung}`,"ok");
-    $("#stufe-bez").value=""; $("#stufe-ord").value="1";
-  }catch(e){ log("Fehler Stufe: "+e.message,"err"); }
-});
-$("#btn-next-2").addEventListener("click", ()=> setStepper(3));
+    const SQL_COLS = [
+      'canonical_name','short_name','aliases','letter','complexity','traits','source_book','source_page',
+      'probe_attr1','probe_attr2','probe_attr3','probe_base_mod','probe_vs_mr',
+      'comp_concentration','comp_sight','comp_geste','comp_formel','comp_material','req_contact_earth','req_no_refined_metal','req_focus_object','comp_notes',
+      'cast_time_unit','cast_time_value','cast_time_formula','cast_time_notes',
+      'range_type','range_stage','range_value','range_value_unit','range_is_zfw','range_notes',
+      'target_kind','target_willing','target_quantity','target_area_value','target_area_unit','target_notes',
+      'duration_type','duration_value','duration_unit','duration_cost_per_unit','duration_cost_unit','duration_notes',
+      'cost_base_asp','cost_per_unit_asp','cost_per_unit_what','cost_min_asp','cost_perm_note','cost_notes',
+      'allow_mod_casttime','allow_mod_cost','allow_mod_range','allow_mod_duration','allow_mod_target','allow_mod_multi_vol','allow_mod_multi_invol','allow_mod_erzwingen',
+      'variants_text','effect_summary','reversalis','antimagic_text','notes',
+      'rep_mag','rep_elf','rep_dru','rep_hex','rep_geo','rep_srl','rep_bor','rep_ach','rep_kop','rep_sat','rep_gro','rep_mud','rep_guel','rep_alh','rep_sch'
+    ];
 
-/** ---------- STEP 3: Kosten ---------- **/
-function kostenRows(){
-  // general row + one per stufe
-  const rows = [{label:"(allgemein)", stufe_id:null}];
-  stufen.forEach(s=> rows.push({label:`Stufe ${s.bezeichnung}`, stufe_id:s.id}));
-  return rows;
-}
-function renderKostenForm(){
-  const host = $("#kosten-form");
-  host.innerHTML = "";
-  kostenRows().forEach(r=>{
-    const div = document.createElement("div");
-    div.className="card";
-    div.innerHTML = `
-      <div class="hint small">Kosten für ${r.label}</div>
-      <label>AP (fix)</label>
-      <input data-k-ap type="number" />
-      <label>AP-Formel (statt fix)</label>
-      <input data-k-formel type="text" placeholder="z.B. 10 AP je betroffene Talentgruppe" />
-      <label>Bemerkung</label>
-      <input data-k-note type="text" />
-    `;
-    div.dataset.stufe = r.stufe_id || "";
-    host.appendChild(div);
-  });
-}
-$("#btn-save-kosten").addEventListener("click", async ()=>{
-  try{
-    const cards = $$("#kosten-form .card");
-    for(const c of cards){
-      const ap = parseNum(c.querySelector("[data-k-ap]").value);
-      const formel = c.querySelector("[data-k-formel]").value.trim() || null;
-      const note = c.querySelector("[data-k-note]").value.trim() || null;
-      if(ap===null && !formel) continue; // skip empty row
-      const row = { sf_id: currentSfId, stufe_id: c.dataset.stufe || null, ap_betrag: ap, ap_formel: formel, bemerkung: note };
-      const { error } = await client.from("sf_kosten").insert(row);
-      if(error) throw error;
+    function q(v){
+      if (v === null || v === undefined || v === '') return 'NULL';
+      if (typeof v === 'number') return String(v);
+      if (typeof v === 'boolean') return v ? 'true' : 'false';
+      return '\'' + String(v).replaceAll("'","''") + '\'';
     }
-    log("Kosten gespeichert.","ok");
-  }catch(e){ log("Fehler Kosten: "+e.message,"err"); }
-});
-$("#btn-next-3").addEventListener("click", ()=> setStepper(4));
 
-/** ---------- STEP 4: Quellen ---------- **/
-function renderQuelleForm(){
-  const host = $("#quelle-form");
-  host.innerHTML = "";
-  const rows = [{label:"(allgemein)", stufe_id:null}].concat(stufen.map(s=>({label:`Stufe ${s.bezeichnung}`, stufe_id:s.id})));
-  rows.forEach(r=>{
-    const div = document.createElement("div");
-    div.className="card";
-    div.dataset.stufe = r.stufe_id || "";
-    div.innerHTML = `
-      <div class="hint small">Quelle für ${r.label}</div>
-      <label>Werk-Code *</label><input data-q-code type="text" placeholder="z.B. WdS" />
-      <label>Werk-Titel</label><input data-q-titel type="text" />
-      <label>Auflage</label><input data-q-aufl type="text" />
-      <label>Seite</label><input data-q-seite type="text" placeholder="S. 123" />
-      <label>Errata</label><input data-q-err type="text" />
-    `;
-    host.appendChild(div);
-  });
-}
-$("#btn-save-quellen").addEventListener("click", async ()=>{
-  try{
-    const cards = $$("#quelle-form .card");
-    for(const c of cards){
-      const code = c.querySelector("[data-q-code]").value.trim();
-      if(!code) continue;
-      const row = {
-        sf_id: currentSfId,
-        stufe_id: c.dataset.stufe || null,
-        werk_code: code,
-        werk_titel: c.querySelector("[data-q-titel]").value.trim() || null,
-        auflage: c.querySelector("[data-q-aufl]").value.trim() || null,
-        seite: c.querySelector("[data-q-seite]").value.trim() || null,
-        errata: c.querySelector("[data-q-err]").value.trim() || null
+    function autoLetter(){
+      const n = str('canonical_name');
+      if (!n) return;
+      const ch = n.trim().charAt(0).toUpperCase();
+      if ($( 'letter').value.trim() === '') $( 'letter').value = ch;
+    }
+    $('canonical_name').addEventListener('input', autoLetter);
+
+    function valMap(){
+      return {
+        canonical_name: str('canonical_name'),
+        short_name: str('short_name'),
+        aliases: str('aliases'),
+        letter: str('letter'),
+        complexity: str('complexity'),
+        traits: str('traits'),
+        source_book: str('source_book'),
+        source_page: num('source_page'),
+
+        probe_attr1: str('probe_attr1'),
+        probe_attr2: str('probe_attr2'),
+        probe_attr3: str('probe_attr3'),
+        probe_base_mod: num('probe_base_mod'),
+        probe_vs_mr: bool('probe_vs_mr'),
+
+        comp_concentration: bool('comp_concentration'),
+        comp_sight: bool('comp_sight'),
+        comp_geste: bool('comp_geste'),
+        comp_formel: bool('comp_formel'),
+        comp_material: str('comp_material'),
+        req_contact_earth: bool('req_contact_earth'),
+        req_no_refined_metal: bool('req_no_refined_metal'),
+        req_focus_object: bool('req_focus_object'),
+        comp_notes: str('comp_notes'),
+
+        cast_time_unit: str('cast_time_unit'),
+        cast_time_value: num('cast_time_value'),
+        cast_time_formula: str('cast_time_formula'),
+        cast_time_notes: str('cast_time_notes'),
+
+        range_type: str('range_type'),
+        range_stage: str('range_stage'),
+        range_value: num('range_value'),
+        range_value_unit: str('range_value_unit'),
+        range_is_zfw: bool('range_is_zfw'),
+        range_notes: str('range_notes'),
+
+        target_kind: str('target_kind'),
+        target_willing: bool('target_willing'),
+        target_quantity: num('target_quantity'),
+        target_area_value: num('target_area_value'),
+        target_area_unit: str('target_area_unit'),
+        target_notes: str('target_notes'),
+
+        duration_type: str('duration_type'),
+        duration_value: num('duration_value'),
+        duration_unit: str('duration_unit'),
+        duration_cost_per_unit: num('duration_cost_per_unit'),
+        duration_cost_unit: str('duration_cost_unit'),
+        duration_notes: str('duration_notes'),
+
+        cost_base_asp: num('cost_base_asp'),
+        cost_per_unit_asp: num('cost_per_unit_asp'),
+        cost_per_unit_what: str('cost_per_unit_what'),
+        cost_min_asp: num('cost_min_asp'),
+        cost_perm_note: str('cost_perm_note'),
+        cost_notes: str('cost_notes'),
+
+        allow_mod_casttime: bool('allow_mod_casttime'),
+        allow_mod_cost: bool('allow_mod_cost'),
+        allow_mod_range: bool('allow_mod_range'),
+        allow_mod_duration: bool('allow_mod_duration'),
+        allow_mod_target: bool('allow_mod_target'),
+        allow_mod_multi_vol: bool('allow_mod_multi_vol'),
+        allow_mod_multi_invol: bool('allow_mod_multi_invol'),
+        allow_mod_erzwingen: bool('allow_mod_erzwingen'),
+
+        variants_text: str('variants_text'),
+        effect_summary: str('effect_summary'),
+        reversalis: str('reversalis'),
+        antimagic_text: str('antimagic_text'),
+        notes: str('notes'),
+
+        rep_mag: num('rep_mag'),
+        rep_elf: num('rep_elf'),
+        rep_dru: num('rep_dru'),
+        rep_hex: num('rep_hex'),
+        rep_geo: num('rep_geo'),
+        rep_srl: num('rep_srl'),
+        rep_bor: num('rep_bor'),
+        rep_ach: num('rep_ach'),
+        rep_kop: num('rep_kop'),
+        rep_sat: num('rep_sat'),
+        rep_gro: num('rep_gro'),
+        rep_mud: num('rep_mud'),
+        rep_guel: num('rep_guel'),
+        rep_alh: num('rep_alh'),
+        rep_sch: num('rep_sch'),
       };
-      const { error } = await client.from("sf_quelle").insert(row);
-      if(error) throw error;
     }
-    log("Quellen gespeichert.","ok");
-  }catch(e){ log("Fehler Quellen: "+e.message,"err"); }
-});
-$("#btn-next-4").addEventListener("click", ()=> {
-  refreshPreGroups();
-  setStepper(5);
-});
 
-/** ---------- STEP 5: Voraussetzungen ---------- **/
-async function refreshPreGroups(){
-  if(!currentSfId) return;
-  // groups
-  const { data: groups } = await client.from("sf_pre_gruppe").select("id,logik,titel").eq("sf_id", currentSfId).order("id");
-  const list = $("#pre-group-list");
-  list.innerHTML = (groups?.length? "":"<div class='hint'>Noch keine Gruppen.</div>");
-  const sel = $("#pre-group-select"); sel.innerHTML="";
-  (groups||[]).forEach(g=>{
-    const card = document.createElement("div"); card.className="card";
-    card.innerHTML = `<b>Gruppe #${g.id}</b> – <span class="pill">${g.logik}</span> ${g.titel?("· "+g.titel):""}
-    <div class="hr"></div>
-    <div id="grp-${g.id}" class="small hint">lade Items…</div>`;
-    list.appendChild(card);
-    const opt = document.createElement("option"); opt.value=g.id; opt.textContent=`#${g.id} (${g.logik}) ${g.titel||""}`; sel.appendChild(opt);
-    // load items
-    loadGroupItems(g.id);
-  });
-}
-async function loadGroupItems(gruppe_id){
-  const { data: items } = await client.from("sf_pre_item").select("*").eq("gruppe_id", gruppe_id).order("id");
-  const host = document.getElementById("grp-"+gruppe_id);
-  if(!items || !items.length){ host.textContent = "— keine Items —"; return; }
-  host.innerHTML = items.map(i=>{
-    if(i.typ==="attr") return `• <kbd>${i.attr_code} ${i.attr_op} ${i.attr_wert}</kbd>`;
-    if(i.typ==="katalog") return `• Katalog #${i.katalog_id}${i.min_wert?` (≥ ${i.min_wert} ${i.min_wert_label||""})`:""}`;
-    if(i.typ==="sf") return `• SF #${i.braucht_sf_id}${i.braucht_stufe?` [Stufe ${i.braucht_stufe}]`:""}`;
-    return `• ${i.frei_text}`;
-  }).join("<br>");
-}
-$("#btn-add-pre-grp").addEventListener("click", async ()=>{
-  try{
-    const logik = $("#pre-logik").value; const titel = $("#pre-title").value.trim()||null;
-    const { data, error } = await client.from("sf_pre_gruppe").insert({ sf_id: currentSfId, logik, titel }).select("id").single();
-    if(error) throw error;
-    log(`Voraussetzungsgruppe #${data.id} angelegt`,"ok");
-    $("#pre-title").value="";
-    await refreshPreGroups();
-  }catch(e){ log("Fehler Gruppe: "+e.message,"err"); }
-});
-$("#btn-add-pre-item").addEventListener("click", async ()=>{
-  try{
-    const gruppe_id = parseInt($("#pre-group-select").value||"0",10);
-    if(!gruppe_id) throw new Error("Bitte Gruppe wählen.");
-    const typ = $("#pre-typ").value;
-    let row = { gruppe_id, typ };
-    if(typ==="attr"){
-      row.attr_code = $("#pre-attr-code").value;
-      row.attr_op = $("#pre-attr-op").value;
-      row.attr_wert = parseInt($("#pre-attr-val").value||"0",10);
-      if(!row.attr_wert) throw new Error("Attributwert fehlt.");
-    }else if(typ==="katalog"){
-      const typK = $("#pre-katalog-typ").value;
-      const nameK = $("#pre-katalog-name").value.trim();
-      const id = await upsertKatalog(typK, nameK);
-      row.katalog_id = id;
-      row.min_wert = parseNum($("#pre-katalog-min").value);
-      row.min_wert_label = $("#pre-katalog-label").value.trim()||null;
-    }else if(typ==="sf"){
-      const q = $("#pre-sf-search").value.trim();
-      if(!q) throw new Error("SF-Name eingeben.");
-      const list = await searchSFByName(q);
-      if(!list.length) throw new Error("Keine passende SF gefunden (lege erst die Ziel-SF an).");
-      row.braucht_sf_id = list[0].id; // nimm erstes Ergebnis (einfach)
-      row.braucht_stufe = $("#pre-sf-stufe").value.trim()||null;
-    }else if(typ==="text"){
-      row.frei_text = $("#pre-freetext").value.trim();
-      if(!row.frei_text) throw new Error("Freitext ist leer.");
+    function buildSQL(){
+      const v = valMap();
+
+      // Pflichtfelder prüfen
+      if (!v.canonical_name) {
+        alert('Bitte Name (kanonisch) ausfüllen.');
+        return;
+      }
+      if (!v.complexity) {
+        alert('Bitte Komplexität wählen.');
+        return;
+      }
+      if (!v.letter && v.canonical_name) {
+        v.letter = v.canonical_name.charAt(0).toUpperCase();
+        $('letter').value = v.letter;
+      }
+
+      const cols = [], vals = [];
+      for (const c of SQL_COLS) {
+        cols.push(c);
+        vals.push(q(v[c]));
+      }
+      const sql = `insert into public.spells_flat (\n  ${cols.join(', ')}\n) values (\n  ${vals.join(', ')}\n);`;
+      $('sqlOutput').value = sql;
+      return sql;
     }
-    const { error } = await client.from("sf_pre_item").insert(row);
-    if(error) throw error;
-    log("Voraussetzungs-Item gespeichert.","ok");
-    await loadGroupItems(gruppe_id);
-  }catch(e){ log("Fehler Item: "+e.message,"err"); }
-});
-$("#btn-next-5").addEventListener("click", ()=> setStepper(6));
 
-/** ---------- STEP 6: Geltung ---------- **/
-async function refreshGeltung(){
-  const { data } = await client.from("sf_geltung").select("id,katalog_id,kommentar").eq("sf_id", currentSfId).order("id");
-  $("#geltung-list").innerHTML = (data?.length? data.map(g=>`• #${g.id} Katalog #${g.katalog_id}${g.kommentar?` (${g.kommentar})`:""}`).join("<br>") : "<div class='hint'>— keine Einträge —</div>");
-}
-$("#btn-add-geltung").addEventListener("click", async ()=>{
-  try{
-    const typ = $("#gelt-typ").value, name = $("#gelt-name").value.trim();
-    const kommentar = $("#gelt-kommentar").value.trim()||null;
-    const katalog_id = await upsertKatalog(typ,name);
-    const { error } = await client.from("sf_geltung").insert({ sf_id: currentSfId, katalog_id, kommentar });
-    if(error) throw error;
-    log("Geltung gespeichert.","ok");
-    $("#gelt-name").value=""; $("#gelt-kommentar").value="";
-    await refreshGeltung();
-  }catch(e){ log("Fehler Geltung: "+e.message,"err"); }
-});
-$("#btn-next-6").addEventListener("click", ()=> setStepper(7));
+    $('gen').addEventListener('click', (e)=>{ e.preventDefault(); buildSQL(); });
+    $('copy').addEventListener('click', (e)=>{ e.preventDefault(); const sql = $('sqlOutput').value; if (!sql) return; navigator.clipboard.writeText(sql); $('copy').textContent='Kopiert!'; setTimeout(()=>$('copy').textContent='SQL kopieren', 1200); });
+    $('reset').addEventListener('click', (e)=>{ e.preventDefault(); if (!confirm('Formular wirklich leeren?')) return; document.querySelectorAll('input, textarea, select').forEach(el=>{ if (el.type==='checkbox') el.checked=false; else el.value=''; }); $('source_book').value = 'LCD'; $('sqlOutput').value=''; });
 
-/** ---------- STEP 7: Nutzung + Ressourcen ---------- **/
-function renderStufeSelects(){
-  const selects = ["nut-stufe","wtext-stufe","eff-stufe"];
-  selects.forEach(id=>{
-    const el = $("#"+id);
-    el.innerHTML = `<option value="">—</option>` + (stufen||[]).map(s=>`<option value="${s.id}">${s.bezeichnung}</option>`).join("");
-  });
-  // pre-groups select refreshed elsewhere
-}
-$("#btn-save-nutzung").addEventListener("click", async ()=>{
-  try{
-    const row = {
-      sf_id: currentSfId,
-      stufe_id: $("#nut-stufe").value || null,
-      aktivierung: $("#nut-aktiv").value,
-      aktionen_kosten: parseNum($("#nut-aktionen").value),
-      dauer_typ: $("#nut-dauertyp").value.trim()||null,
-      dauer_wert: $("#nut-dauerwert").value.trim()||null,
-      bedingung: $("#nut-beding").value.trim()||null
-    };
-    const { data, error } = await client.from("sf_nutzung").insert(row).select("id").single();
-    if(error) throw error;
-    $("#nut-id").textContent = "nutzung_id: "+data.id;
-    $("#ress-list").innerHTML = "<div class='hint'>— noch keine Ressourcen —</div>";
-    log("Nutzung gespeichert (#"+data.id+").","ok");
-  }catch(e){ log("Fehler Nutzung: "+e.message,"err"); }
-});
-$("#btn-add-ress").addEventListener("click", async ()=>{
-  try{
-    const nid = ($("#nut-id").textContent.split(":")[1]||"").trim();
-    if(!nid || nid==="—") throw new Error("Erst Nutzung speichern.");
-    const betrag = parseNum($("#res-betrag").value);
-    const formel = $("#res-formel").value.trim()||null;
-    if(betrag===null && !formel) throw new Error("Betrag oder Formel angeben.");
-    const row = {
-      nutzung_id: parseInt(nid,10),
-      typ: $("#res-typ").value,
-      betrag,
-      formel,
-      bemerkung: $("#res-bem").value.trim()||null
-    };
-    const { error } = await client.from("sf_nutzung_ressource").insert(row);
-    if(error) throw error;
-    log("Ressource gespeichert.","ok");
-    const { data } = await client.from("sf_nutzung_ressource").select("*").eq("nutzung_id", parseInt(nid,10));
-    $("#ress-list").innerHTML = data.map(r=>`• ${r.typ} ${r.betrag??""} ${r.formel??""}`).join("<br>");
-    $("#res-betrag").value=""; $("#res-formel").value=""; $("#res-bem").value="";
-  }catch(e){ log("Fehler Ressource: "+e.message,"err"); }
-});
-$("#btn-next-7").addEventListener("click", ()=> setStepper(8));
+    $('save').addEventListener('click', (e)=>{ e.preventDefault(); const v = valMap(); localStorage.setItem('zauber_draft', JSON.stringify(v)); $('save').textContent='Gespeichert'; setTimeout(()=>$('save').textContent='Entwurf speichern', 1200); });
+    $('load').addEventListener('click', (e)=>{ e.preventDefault(); const raw = localStorage.getItem('zauber_draft'); if (!raw) { alert('Kein gespeicherter Entwurf.'); return; } const v = JSON.parse(raw); for (const [k,val] of Object.entries(v)) { const el = $(k); if (!el) continue; if (typeof val === 'boolean') el.checked = !!val; else if (val === null) el.value=''; else el.value = val; } $('sqlOutput').value=''; });
 
-/** ---------- STEP 8: Wirkungen + Effekte ---------- **/
-$("#btn-add-wtext").addEventListener("click", async ()=>{
-  try{
-    const row = {
-      sf_id: currentSfId,
-      stufe_id: $("#wtext-stufe").value || null,
-      text: $("#wtext-text").value.trim()
-    };
-    if(!row.text) throw new Error("Text fehlt.");
-    const { error } = await client.from("sf_wirkung_text").insert(row);
-    if(error) throw error;
-    log("Wirkungstext gespeichert.","ok");
-    $("#wtext-text").value="";
-  }catch(e){ log("Fehler Wirkungstext: "+e.message,"err"); }
-});
-$("#btn-add-eff").addEventListener("click", async ()=>{
-  try{
-    let ziel_katalog = null;
-    const typ = $("#eff-kat-typ").value; const name = $("#eff-kat-name").value.trim();
-    if(typ && name){ ziel_katalog = await upsertKatalog(typ, name); }
-    const row = {
-      sf_id: currentSfId,
-      stufe_id: $("#eff-stufe").value || null,
-      ziel_typ: $("#eff-zieltyp").value.trim(),
-      ziel_katalog,
-      operator: $("#eff-op").value,
-      wert_num: parseNum($("#eff-num").value),
-      wert_wuerfel: $("#eff-wurf").value.trim()||null,
-      bedingung: $("#eff-bed").value.trim()||null,
-      stapelregel: $("#eff-stack").value.trim()||null
-    };
-    if(!row.ziel_typ) throw new Error("Ziel-Typ fehlt.");
-    const { error } = await client.from("sf_effect").insert(row);
-    if(error) throw error;
-    log("Effekt gespeichert.","ok");
-    ["eff-kat-name","eff-num","eff-wurf","eff-bed","eff-stack"].forEach(id=>$("#"+id).value="");
-  }catch(e){ log("Fehler Effekt: "+e.message,"err"); }
-});
-$("#btn-next-8").addEventListener("click", ()=> setStepper(9));
-
-/** ---------- STEP 9: Konflikte ---------- **/
-$("#btn-add-konflikt").addEventListener("click", async ()=>{
-  try{
-    const q = $("#konf-suche").value.trim();
-    if(!q) throw new Error("Name eingeben.");
-    const list = await searchSFByName(q);
-    if(!list.length) throw new Error("Keine SF gefunden.");
-    const other = list[0];
-    const { error } = await client.from("sf_konflikt").insert({ sf_id: currentSfId, ausschluss_sf_id: other.id, bemerkung: $("#konf-bem").value.trim()||null });
-    if(error) throw error;
-    log(`Konflikt gespeichert (gegen ${other.name}).`,"ok");
-    $("#konf-bem").value=""; $("#konf-suche").value="";
-    const { data } = await client.from("sf_konflikt").select("id,ausschluss_sf_id").eq("sf_id", currentSfId);
-    $("#konf-list").innerHTML = data.map(k=>`• #${k.id} gegen SF #${k.ausschluss_sf_id}`).join("<br>");
-  }catch(e){ log("Fehler Konflikt: "+e.message,"err"); }
-});
-$("#btn-next-9").addEventListener("click", ()=> { refreshChecklist(); setStepper(10); });
-
-/** ---------- STEP 10: Review ---------- **/
-async function refreshChecklist(){
-  try{
-    const { data, error } = await client.from("sf_checkliste").select("*").eq("id", currentSfId).single();
-    if(error) throw error;
-    const ok = (b)=> `<span class="pill" style="background:${b?'var(--ok)':'#2d355f'};color:${b?'#06200f':'var(--muted)'}">${b?'OK':'fehlt'}</span>`;
-    $("#checkliste").innerHTML = `
-      <div><b>${data.name}</b> (id ${data.id})</div>
-      <div class="hr"></div>
-      <div class="grid">
-        <div>Kosten: ${ok(data.hat_kosten)}</div>
-        <div>Stufen (falls nötig): ${ok(data.hat_stufen_falls_noetig)}</div>
-        <div>Quellen: ${ok(data.hat_quellen)}</div>
-        <div>Wirkungstext: ${ok(data.hat_wirkungstext)}</div>
-        <div>Voraussetzungen konsistent: ${ok(data.voraussetzungen_ok)}</div>
-      </div>
-    `;
-    log("Checkliste geladen.","ok");
-  }catch(e){ log("Fehler Checkliste: "+e.message,"err"); }
-}
-$("#btn-refresh-check").addEventListener("click", refreshChecklist);
-$("#btn-del-sf").addEventListener("click", async ()=>{
-  try{
-    if(!currentSfId) return;
-    if(!confirm("Diese SF und alle abhängigen Datensätze löschen?")) return;
-    const { error } = await client.from("sonderfertigkeit").delete().eq("id", currentSfId);
-    if(error) throw error;
-    log("SF gelöscht (Rollback).","warn");
-    location.reload();
-  }catch(e){ log("Fehler Löschen: "+e.message,"err"); }
-});
-</script>
+    $('download').addEventListener('click', (e)=>{ e.preventDefault(); const sql = buildSQL(); if (!sql) return; const blob = new Blob([sql], {type:'text/sql'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); const safeName = (str('canonical_name')||'zauber').replace(/[^a-z0-9_-]+/gi,'_').toLowerCase(); a.download = `${safeName}.sql`; a.click(); URL.revokeObjectURL(a.href); });
+  </script>
 </body>
 </html>
